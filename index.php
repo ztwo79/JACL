@@ -89,100 +89,130 @@
                     </li>    
 
                     <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Edit<b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                      </ul>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Edit<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a tabindex="-1" href="#">Undo</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Cut</a></li>
+                            <li><a tabindex="-1" href="#">Copy</a></li>     
+                            <li><a tabindex="-1" href="#">Paste</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Find</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Table Layout</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Filter</a></li>
+                            <li><a tabindex="-1" href="#">Variable</a></li>                                         
+                            <li class="dropdown-submenu"><a tabindex="-1" href="#">Notes</a>
+                                <ul class="dropdown-menu">
+                                    <li><a tabindex="-1" href="#">Delete All Notes from Table</a></li>
+                                    <li><a tabindex="-1" href="#">Edit Note</a></li>                                                    
+                                </ul>
+                            </li>
+                        </ul>
                     </li>                
                     <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Data<b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                      </ul>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Data<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a tabindex="-1" href="#">Extract Data</a></li>                                         
+                            <li><a tabindex="-1" href="#">Export To Other Application</a></li>
+                            <li class="divider"></li>
+                            <li class="dropdown-submenu"><a tabindex="-1" href="#">Crystal</a>
+                                <ul class="dropdown-menu">
+                                    <li><a tabindex="-1" href="#">Update Template</a></li>
+                                    <li><a tabindex="-1" href="#">Create Template</a></li>
+                                    <li><a tabindex="-1" href="#">View Report</a></li>
+                                </ul>
+                            </li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Create Index</a></li>                                         
+                            <li><a tabindex="-1" href="#">Relate Table</a></li>                                         
+                            <li><a tabindex="-1" href="#">Report</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Join Tables</a></li>
+                            <li><a tabindex="-1" href="#">Merge Tables</a></li>                                         
+                            <li><a tabindex="-1" href="#">Sort Records</a></li>
+                            <li class="divider"></li>       
+                            <li><a tabindex="-1" href="#">Verify</a></li>                                           
+                            <li><a tabindex="-1" href="#">Search</a></li>
+                        </ul>
                     </li>                
                     <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Analyze<b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Analyze<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                        <li><a tabindex="-1" href="#">Count Records</a></li>                                            
+                        <li><a tabindex="-1" href="#">Total Fields</a></li>
                         <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
+                        <li class="dropdown-submenu"><a tabindex="-1" href="#">Statistical</a>
+                            <ul class="dropdown-menu">
+                                <li><a tabindex="-1" href="#">Statistics</a></li>
+                                <li><a tabindex="-1" href="#">Profile</a></li>                                                  
+                            </ul>
+                        </li>
                         <li class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                      </ul>
+                        <li><a tabindex="-1" href="#">Stratify</a></li>                                         
+                        <li><a tabindex="-1" href="#">Classify</a></li>                                         
+                        <li><a tabindex="-1" href="#">Histogram</a></li>
+                        <li><a tabindex="-1" href="#">Age</a></li>
+                        <li><a tabindex="-1" href="#">Summarize</a></li>    
+                        <li class="divider"></li>
+                        <li><a tabindex="-1" href="#">Cross-tabulate</a></li>
+                        <li><a tabindex="-1" href="#">Perform Benford Analysis</a></li>                                 
+                        <li class="divider"></li>       
+                        <li><a tabindex="-1" href="#">Examine Sequence</a></li>                                         
+                        <li><a tabindex="-1" href="#">Look for Gaps</a></li>
+                        <li><a tabindex="-1" href="#">Look for Duplicates</a></li>                                          
+                        <li><a tabindex="-1" href="#">Fuzzy Duplicates</a></li>
+                        </ul>
                     </li>                
                     <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sampling<b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                      </ul>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Sampling<b class="caret"></b></a>
+                        <ul class="dropdown-menu">                        
+                            <li><a tabindex="-1" href="#">Calculate Sample Size</a></li>                                            
+                            <li><a tabindex="-1" href="#">Sample Records</a></li>                                           
+                            <li><a tabindex="-1" href="#">Evaluate Error</a></li>
+                        </ul>
+                    </li>                
+                    <li class="dropdown">                      
+                      <li><a href="#">Applications</a></li>
                     </li>                
                     <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Applications<b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                      </ul>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a tabindex="-1" href="#">Add New Session</a></li>                                         
+                            <li><a tabindex="-1" href="#">Add Comment</a></li>                                          
+                            <li><a tabindex="-1" href="#">Hex Dump</a></li>
+                            <li><a tabindex="-1" href="#">Generate Random Numbers</a></li>                                          
+                            <li><a tabindex="-1" href="#">Table History</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Notify by Email</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Create Script from Table History</a></li>                                         
+                            <li><a tabindex="-1" href="#">Run Script</a></li>                                           
+                            <li><a tabindex="-1" href="#">Set Script Recorder On</a></li>   
+                        </ul>
                     </li>                
                     <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools<b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                      </ul>
-                    </li>                
-                    <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Server<b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                      </ul>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Server<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a tabindex="-1" href="#">Server Profiles</a></li>                                         
+                            <li><a tabindex="-1" href="#">Database Profiles</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">ACLGRC Access Token</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Connect</a></li>                                          
+                            <li><a tabindex="-1" href="#">Disconnect</a></li>                                       
+                            <li><a tabindex="-1" href="#">Activity Log</a></li>
+                            <li class="divider"></li>
+                            <li><a tabindex="-1" href="#">Transfer to Server</a></li>
+                        </ul>
                     </li>  
                     <li class="dropdown">
-                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">Windows<b class="caret"></b></a>
-                      <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
-                        <li><a href="#">Something else here</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">Separated link</a></li>
-                        <li class="divider"></li>
-                        <li><a href="#">One more separated link</a></li>
-                      </ul>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Windows<b class="caret"></b></a>
+                        <ul class="dropdown-menu">
+                            <li><a tabindex="-1" href="#">Show Command Line</a></li>                                            
+                            <li><a tabindex="-1" href="#">Show Welcome Screen</a></li>
+                        </ul>
                     </li>                    
                   </ul>
                 </div><!-- /.navbar-collapse -->
