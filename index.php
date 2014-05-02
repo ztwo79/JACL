@@ -25,6 +25,9 @@
     .dropdown-submenu>a:after{display:block;content:" ";float:right;width:0;height:0;border-color:transparent;border-style:solid;border-width:5px 0 5px 5px;border-left-color:#cccccc;margin-top:5px;margin-right:-10px;}
     .dropdown-submenu:hover>a:after{border-left-color:#ffffff;}
     .dropdown-submenu.pull-left{float:none;}.dropdown-submenu.pull-left>.dropdown-menu{left:-100%;margin-left:10px;-webkit-border-radius:6px 0 6px 6px;-moz-border-radius:6px 0 6px 6px;border-radius:6px 0 6px 6px;}
+    .show_td{
+        border: 3px  ridge ;
+    }
     </style>
   </head>
   <body>
@@ -218,7 +221,11 @@
                 </div><!-- /.navbar-collapse -->
             </div><!-- /.container-fluid -->
             </nav>       
-        </div>        
+        </div><!-- row -->
+        <div class="row">
+            <div class="col-md-3 show_td" ><iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe></div>  
+            <div class="col-md-9 show_td" ><iframe name="ifm-right"  width="100%" height="700" frameborder="0"></iframe></div>  
+        </div>      
     </div><!-- main container -->
   </body>
 </html>
