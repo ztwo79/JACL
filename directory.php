@@ -85,16 +85,24 @@ if (!empty($data_arr)) {
 				if (!empty($table_col_arr)) {
 					$table_col_sql=implode(",", $table_col_arr);					
 				}
-				
-				// create table sql
-				$create_table_sql="CREATE TABLE IF NOT EXISTS $table_name (";
-				$create_table_sql.=$table_col_sql;				
-				$create_table_sql.=",key_id  INT  AUTO_INCREMENT  NOT NULL ,INDEX (key_id)";
-				$create_table_sql.=")";				
-				mysql_query($create_table_sql) or die("資料表新增失敗");				
+
+				// check table is existing or not
+				if(mysql_num_rows(mysql_query("SHOW TABLES LIKE '".$table_name."'"))==1) {
+					$table_description[$table_name]["table_chk"]=true;
+				}else{
+					$table_description[$table_name]["table_chk"]=false;
+					// create table sql
+					$create_table_sql="CREATE TABLE IF NOT EXISTS $table_name (";
+					$create_table_sql.=$table_col_sql;				
+					$create_table_sql.=",key_id  INT  AUTO_INCREMENT  NOT NULL ,INDEX (key_id)";
+					$create_table_sql.=")";				
+					mysql_query($create_table_sql) or die("資料表新增失敗");				
+				}				
 			}
 		}
 
+
+				
 		// get insert table file
 		$table_file_chk = strpos($each_line,"^FORMAT");				
 		if ($table_file_chk!==false) {						
@@ -108,66 +116,60 @@ if (!empty($data_arr)) {
 			$col_width_arr =  $table_description[$insert_table]["col_length"];
 			$col_start_arr =  $table_description[$insert_table]["col_start"];
 			$col_type_arr =  $table_description[$insert_table]["col_type"];
-			$col_decimal_dot_arr =  $table_description[$insert_table]["decimal_dot"];			
-			
+			$col_decimal_dot_arr =  $table_description[$insert_table]["decimal_dot"];
 			$arr_count = count($col_start_arr)-1;
 
-			// open table file
-			$insert_table_file_src="ACL DATA/table_file/$table_file_name";
-			$insert_table_file = fopen($insert_table_file_src, "rb");
-			$insert_table_file_size = filesize($insert_table_file_src);
+			// T:table had been created F:first created
+			$table_chk = $table_description[$insert_table]["table_chk"];
+			// first created , so has to insert data
+			if ($table_chk===false) {
+				// open table file
+				$insert_table_file_src="ACL DATA/table_file/$table_file_name";
+				$insert_table_file = fopen($insert_table_file_src, "rb");
+				$insert_table_file_size = filesize($insert_table_file_src);
 
-			while(!feof($insert_table_file)){
-				// get fil data by it's start point and length  define by above
- 				$file_line=fgets($insert_table_file , $each_ling_length);
- 				$file_line_len = strlen($file_line)+1;
- 				
- 				// at the end of file don't inert 0 data 				
- 				if ($file_line_len<$each_ling_length) { 					
- 					continue;
- 				}
- 				// echo $file_line."<br>";
- 				if (!empty($col_start_arr)) {
- 					$insert_table_arr=array();
- 					foreach ($col_start_arr as $col => $col_start) { 						
- 						$data_type = $col_type_arr[$col];
- 						$decimal_dot = $col_decimal_dot_arr[$col];
- 						$start=$col_start-1;
+				while(!feof($insert_table_file)){
+					// get fil data by it's start point and length  define by above
+	 				$file_line=fgets($insert_table_file , $each_ling_length);
+	 				$file_line_len = strlen($file_line)+1;
+	 				
+	 				// at the end of file don't inert 0 data 				
+	 				if ($file_line_len<$each_ling_length) { 					
+	 					continue;
+	 				}
+	 				// echo $file_line."<br>";
+	 				if (!empty($col_start_arr)) {
+	 					$insert_table_arr=array();
+	 					foreach ($col_start_arr as $col => $col_start) { 						
+	 						$data_type = $col_type_arr[$col];
+	 						$decimal_dot = $col_decimal_dot_arr[$col];
+	 						$start=$col_start-1;
 
- 						// get data
- 						$line_data =  substr($file_line, $start , $col_width_arr[$col]); 						 						
- 						// ACL data type has to insert decimal dot
- 						if ($data_type=="ACL") { 							 							
- 							$line_data = bin2hex ($line_data);
- 							$line_data = substr($line_data, -22);
- 							$line_data = (float)$line_data; 
- 							// insert decimal dot
- 							$line_data =insert_dot($line_data ,$decimal_dot); 							
- 						}
- 						$line_data = trim($line_data);
- 						$line_data = mysql_real_escape_string($line_data);
+	 						// get data
+	 						$line_data =  substr($file_line, $start , $col_width_arr[$col]); 						 						
+	 						// ACL data type has to insert decimal dot
+	 						if ($data_type=="ACL") { 							 							
+	 							$line_data = bin2hex ($line_data);
+	 							$line_data = substr($line_data, -22);
+	 							$line_data = (float)$line_data; 
+	 							// insert decimal dot
+	 							$line_data =insert_dot($line_data ,$decimal_dot); 							
+	 						}
+	 						$line_data = trim($line_data);
+	 						$line_data = mysql_real_escape_string($line_data);
 
- 						$insert_table_arr[]=trim($line_data);
- 					}
- 					// insert table sql
- 					$insert_sql  = "INSERT INTO $insert_table";
- 					$insert_sql .= " (".implode(",", ($col_name_arr)).")";
- 					$insert_sql .= " VALUES ('".implode("', '", $insert_table_arr)."') ";
- 					mysql_query($insert_sql) or die( "$insert_sql 輸入資料表失敗");
- 				}
+	 						$insert_table_arr[]=trim($line_data);
+	 					}
+	 					// insert table sql
+	 					$insert_sql  = "INSERT INTO $insert_table";
+	 					$insert_sql .= " (".implode(",", ($col_name_arr)).")";
+	 					$insert_sql .= " VALUES ('".implode("', '", $insert_table_arr)."') ";
+	 					//@debug
+	 					// echo "$insert_sql<br>";
+	 					mysql_query($insert_sql) or die( "$insert_sql 輸入資料表失敗");
+	 				}
+				}
 			}
-			
-			// echo $insert_table_data;
-
-			// table_file_name
-			
-			
-			// $get_table_detail_chk=true;
-			// $table_length =  next($table_arr);
-			
-			// $table_length_count=0;
-			// $table_col_arr=array();
-			// continue;
 		}
 	}//foreach ($data_arr as $line => $each_line) {
 }//if (!empty($data_arr)) {
