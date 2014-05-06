@@ -13,9 +13,9 @@ include "include/utility.php";
 $ALC_project_file="Metaphor_Employee_Data.ACL";
 $ALC_project_src="ACL DATA/$ALC_project_file";
 
-$ALC_project_file=fopen($ALC_project_src , "r");
+$ALC_project_file_fp=fopen($ALC_project_src , "r");
 $all_size=filesize($ALC_project_src);
-$all=fread($ALC_project_file, $all_size);
+$all=fread($ALC_project_file_fp, $all_size);
 $all=mb_convert_encoding($all, 'UTF-8', 'UTF-16LE');
 
 $data_arr=explode("\n", $all);
@@ -187,50 +187,114 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 </style>
 <head>
 	<title></title>
-	<link rel="stylesheet" href="include/jquerytreeview/jquery.treeview.css" />
-	<link rel="stylesheet" href="include/jquerytreeview/screen.css" />
-	<script src="js/jquery-1.11.0.min.js"></script>
-	<script src="include/jquerytreeview/lib/jquery.js" type="text/javascript"></script>
-	<script src="include/jquerytreeview/lib/jquery.cookie.js" type="text/javascript"></script>
-	<script src="include/jquerytreeview/jquery.treeview.js" type="text/javascript"></script>
+	<!-- fancytree css  skin -->
+	<link href="lib/fancytree/src/skin-win7/ui.fancytree.css" rel="stylesheet" type="text/css">
+	<!-- custom.css -->
+	<!-- <link href="lib/fancytree/demo/skin-custom/custom.css" rel="stylesheet" type="text/css" > -->
+	<link href="css/directory.css" rel="stylesheet" type="text/css" >
 	
+
+
+	<script src="js/jquery-1.11.0.min.js"></script>
+  	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js" type="text/javascript"></script>
+	<!-- facyytree  -->
+	<script src="lib/fancytree/src/jquery.fancytree.js" type="text/javascript"></script>
+
+
+
+	
+	<style type="text/css">
+	span.fancytree-node.table_img > span.fancytree-title {
+	  /*color: maroon;*/
+	  /*font-family: "Audiowide";*/
+	}
+	span.fancytree-node.table_img > span.fancytree-icon {
+	  /*background-image: url("fancytree/demo/skin-custom/customDoc2.gif");*/
+	  background-image: url("img/acl_treeview/table_img.png");
+	  background-position: 0 0;
+	}
+	span.fancytree-node.table_img_active > span.fancytree-icon {	  
+	  background-image: url("img/acl_treeview/table_img_active.png");
+	  background-position: 0 0;
+	}
+	</style>
+	
+
 	<script type="text/javascript">
 	$(document).ready(function() {
-		
-		//初始設定
-		$("#browser").treeview({
-			collapsed: true, //是否預先打開
-			animated: "fast", //動畫使用
-			control:"#sidetreecontrol", //將 打開/折合事件綁定至該 div
-			// persist: "cookie",
-			cookieId: "navigationtree",
-			prerendered:false, //預先載入同 Layer 內容
-			unique:true //打開某選項，關閉其他選項
-		});
+	  	$("#tree").fancytree();
+	  	// {
+	  // 		activate: function(event, data){
+			// 	var node = data.node;
+			// 	// alert(node.data.test);
+
+			// 	// $.ui.fancytree.debug("activate: event=", event, ", data=", data);
+			// 	// if(!$.isEmptyObject(node.data)){
+			// 	// 	alert("custom node data: " + JSON.stringify(node.data));
+			// 	// }
+			// },
+
+
+	  	// }
+	  	// );
+
+
+	  	$(".item").click(function(event) {
+	  		var tablename = $(this).find(".fancytree-title").html();
+	  		$(this).removeClass('table_img').addClass('table_img_active');
+	  		$('#file_content', window.parent.document).prop("src" , "file_content.php?table_name="+tablename);
+
+	  	});
+
 	});
 		
 	</script>
 	
 </head>
 <body>
-		<table width="90%" border="0" bordercolor="#0E5100" cellspacing="0" cellpadding="0" style="WORD-BREAK: break-all">
-		<tr><td align="left">
-			<input type="hidden" id="id_counter" name="id_counter" value="<? echo $m_order;?>"/>
-			<ul id="browser" class="filetree">
-				<?
+
+	<div id="tree">
+	    <ul>
+	      	<li class="folder expanded"><?echo $ALC_project_file;?>
+		        <ul>		          
+		        <?php
 					foreach ($table_description as $table_name => $value) {						
 						?>
-						<li class="layer_1 <?echo $openable;?>"  container="layer_1_container_<? echo $mkey;?>" filename="<?echo $table_name?>" >
-						<span class='folder'><?echo $table_name?></span>
-						<ul id="layer_1_container_<? echo $mkey;?>"> </ul>
-						</li>	
+							<li class="table_img item"  data-test="test" ><span class='folder'><?echo $table_name?></span></li>
 						<?
 					}
-					
-				?>				 
-			</ul>
-		</td></tr>
-		</table>
+				?>	
+		        </ul>
+			</li>
+	    </ul>
+  	</div>
+<!--   	<li class="folder expanded">Override CSS style per node
+	        <ul>
+	          <li class="custom1">class="custom1": Additional classes are copied over to outer &lt;span>
+	          <li class="folder custom1">class="custom1": Additional classes are copied over to outer &lt;span>
+	        </ul>
+
+	      <li class="folder expanded">Use 'data-NAME' attributes to define additional data
+	        <ul>
+	          <li data-icon="customDoc1.gif">Node with standard CSS, but custom icon
+	          <li class="folder" data-icon="folder_docs.gif">Folder with standard CSS but custom icon
+	          <li data-iconclass="ui-icon ui-icon-heart">'iconclass' is directly added to the image &lt;span>, so jQuery stock icons may be used
+	        </ul>
+
+	      <li class="folder expanded">Use 'data-json' attribute to define additional data
+	        <ul>
+	          <li data-json='{"icon": "customDoc1.gif"}'>Node with standard CSS, but custom 'data-icon'
+	        </ul>
+
+	      <li class="folder expanded">Use render callback
+	        <ul>
+	          <li id="renderNode1" data-cstrender="true">Node hat will be handled by 'render' calback
+	        </ul>
+ -->
+
+
+
+
 </body>
 </html>
 

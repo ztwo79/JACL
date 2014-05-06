@@ -1,0 +1,23 @@
+#tree{
+	width: 100%;
+	border: 0px;
+	display: inline;
+}
+.fancytree-container{
+	width: 100% ;
+	border: 0px !important;
+	
+	overflow:visible !important;
+	/*overflow:hidden !important;
+	overflow:scroll !important;
+	overflow:auto !important;
+	overflow:initial !important;
+	overflow:inherit !important;
+	*/
+	
+	
+	
+	
+	
+}
+

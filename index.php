@@ -224,7 +224,7 @@
         </div><!-- row -->
         <div class="row">
             <div class="col-md-3 show_td" ><iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe></div>  
-            <div class="col-md-9 show_td" ><iframe name="ifm-right"  src="file_content.php" width="100%" height="700" frameborder="0"></iframe></div>  
+            <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="file_content.php" width="100%" height="700" frameborder="0"></iframe></div>  
         </div>      
     </div><!-- main container -->
   </body>
