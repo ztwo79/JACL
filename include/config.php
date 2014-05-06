@@ -7,12 +7,27 @@ set_time_limit(0);
 // 使用localhost 會導致連結Mysql過慢
 // $HOST = "localhost";
 $HOST = "127.0.0.1";
+$DB_name="acl_online";
 $USER = "root";
 $PASSWORD = "jacksoft";	 
 $conn = mysql_connect($HOST,$USER,$PASSWORD) or die(mysql_error());
 mysql_query("SET NAMES 'utf8'");
-mysql_select_db("acl_online",$conn) or die(mysql_error());
+mysql_select_db($DB_name, $conn) or die(mysql_error());
+
+
+// 
+try {
+	$db_conn = new PDO("mysql:host=$HOST;dbname=$DB_name", $USER, $PASSWORD);
+} catch (PDOException $e) {
+	echo "Could not connect to database ".$e->getMessage();; 
+	exit;
+}
+
+
+
 /*********************************************************************/
+
+
 // extension=php_pdo.dll
 // extension=php_pdo_mysql.dll
 // extension=php_pdo_pgsql.dll
@@ -21,11 +36,4 @@ mysql_select_db("acl_online",$conn) or die(mysql_error());
 // extension=php_pdo_odbc.dll
 // extension=php_pdo_firebird.dll
 // ;extension=php_pdo_oci8.dll
-
-// $dsn = "mysql:host=localhost;dbname=test";
-// $db = new PDO($dsn, root, );
-// $count = $db-＞exec("INSERT INTO foo SET name = heiyeluren,gender=男,time=NOW()");
-// echo $count;
-// $db = null;
-
 ?>

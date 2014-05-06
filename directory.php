@@ -50,6 +50,8 @@ if (!empty($data_arr)) {
 			$detail_index = $col_index+$col_length-1;
 
 
+
+
 			$table_description[$table_name]["col_name"][]=$col_name;
 			$table_description[$table_name]["col_start"][]=$col_index;
 			$table_description[$table_name]["col_length"][]=$col_length;
@@ -86,6 +88,14 @@ if (!empty($data_arr)) {
 					$table_col_sql=implode(",", $table_col_arr);					
 				}
 
+				// $res = $db_conn->query("SHOW TABLES LIKE '".$table_name."';SELECT FOUND_ROWS();");
+				// echo "SHOW TABLES LIKE '".$table_name."';SELECT FOUND_ROWS();";
+				// $num_rows = $res->fetchColumn();
+				// echo $num_rows."<br>";
+				// die;
+				
+				// echo mysql_num_rows(mysql_query("SHOW TABLES LIKE '".$table_name."'"))."<br>";
+				
 				// check table is existing or not
 				if(mysql_num_rows(mysql_query("SHOW TABLES LIKE '".$table_name."'"))==1) {
 					$table_description[$table_name]["table_chk"]=true;
@@ -96,7 +106,13 @@ if (!empty($data_arr)) {
 					$create_table_sql.=$table_col_sql;				
 					$create_table_sql.=",key_id  INT  AUTO_INCREMENT  NOT NULL ,INDEX (key_id)";
 					$create_table_sql.=")";				
-					mysql_query($create_table_sql) or die("資料表新增失敗");				
+					// mysql_query($create_table_sql) or die("資料表新增失敗");
+					try {
+						$db_conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+						$stmt = $db_conn->exec($create_table_sql);
+					} catch (PDOException $e) {						
+						die("新增資料表時出現錯誤   錯誤如下 <br>" . $e->getMessage());
+					}			
 				}				
 			}
 		}
@@ -164,9 +180,12 @@ if (!empty($data_arr)) {
 	 					$insert_sql  = "INSERT INTO $insert_table";
 	 					$insert_sql .= " (".implode(",", ($col_name_arr)).")";
 	 					$insert_sql .= " VALUES ('".implode("', '", $insert_table_arr)."') ";
-	 					//@debug
-	 					// echo "$insert_sql<br>";
-	 					mysql_query($insert_sql) or die( "$insert_sql 輸入資料表失敗");
+	 					try {
+							$db_conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+							$stmt = $db_conn->exec($insert_sql);
+						} catch (PDOException $e) {						
+							die("輸入資料時出現錯誤   錯誤如下 <br>" . $e->getMessage());
+						}		
 	 				}
 				}
 			}
@@ -240,10 +259,12 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 
 
 	  	$(".item").click(function(event) {
-	  		var tablename = $(this).find(".fancytree-title").html();
 	  		$(this).removeClass('table_img').addClass('table_img_active');
+	  	});
+	  	$(".item").dblclick(function(event) {
+	  		// alert();
+	  		var tablename = $(this).find(".fancytree-title").html();
 	  		$('#file_content', window.parent.document).prop("src" , "file_content.php?table_name="+tablename);
-
 	  	});
 
 	});
