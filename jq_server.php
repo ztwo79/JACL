@@ -8,10 +8,11 @@ if(!$sidx) $sidx =1;
 
 // $page=1;
 // $limit=20;
+// $table_name="employee_list";
 
 // get total row
 try {
-	$stmt = $db_conn->query('SELECT COUNT(*) FROM employee_list');	
+	$stmt = $db_conn->query("SELECT COUNT(*) FROM $table_name");
 	if ($stmt===false) {
 		throw new Exception('取得資料總筆數出現錯誤');
 	}
@@ -38,9 +39,29 @@ $responce->page = $page;
 $responce->total = $total_pages;
 $responce->records = $count;
 
+
+
+
+
+
 // get table data
 try {
-	$stmt = $db_conn->query("SELECT * FROM employee_list ORDER BY $sidx $sord LIMIT $start , $limit");
+	$stmt = $db_conn->query("SELECT COUNT(*) AS total_col from information_schema.columns  where TABLE_NAME='$table_name'");
+	if ($stmt===false) {
+		throw new Exception('取得資料表總欄位數出現錯誤');
+	}
+} catch (Exception $e) {
+	$error = $db_conn->errorInfo();
+	echo "資料庫存取發生錯誤: " . $e->getMessage()."<br>";
+	echo "錯誤行數: " . $e->getline()."<br>";
+	// echo "錯誤內容: " . $error[2];
+	die();
+}
+$total_col= $stmt->fetchColumn()-1;
+
+// get table data
+try {
+	$stmt = $db_conn->query("SELECT * FROM $table_name ORDER BY $sidx $sord LIMIT $start , $limit");
 	if ($stmt===false) {
 		throw new Exception('取得資料表內容出現錯誤');
 	}
@@ -51,23 +72,21 @@ try {
 	// echo "錯誤內容: " . $error[2];
 	die();
 }
-$i=0;
+$row_counter=0;
 while($row = $stmt->fetch()) {
+	//  table order
+	$responce->rows[$row_counter]['id']=$row["key_id"];
 	
-	$responce->rows[$i]['id']=$row["key_id"];
-    // $responce->rows[$i]['cell']=array($row["key_id"], $row["First_Name"], $row["Last_Name"], $row["CardNum"], $row["EmpNo"], $row["HireDate"], $row["Salary"]);
-    $responce->rows[$i]['cell']=array($row["key_id"], $row["First_Name"], $row["Last_Name"], $row["CardNum"], $row["EmpNo"], $row["HireDate"], $row["Salary"], $row["Bonus_2005"]);
-    $i++;
-
-
+	$data_arr = array();
+	$data_arr[] = $row["key_id"];
+	for ($i=0; $i < $total_col; $i++) {
+		$data_arr[] = $row[$i];
+	}
+    // $responce->row[$i]['cell']=array($row["key_id"], $row["First_Name"], $row["Last_Name"], $row["CardNum"], $row["EmpNo"], $row["HireDate"], $row["Salary"]);
+    $responce->rows[$row_counter]['cell'] = $data_arr;
+    $row_counter++;
 }
 
-// $SQL = "SELECT a.id, a.invdate, b.name, a.amount,a.tax,a.total,a.note FROM invheader a, clients b WHERE a.client_id=b.client_id ORDER BY $sidx $sord LIMIT $start , $limit";
-
-// $i=0;
-// while($row = mysql_fetch_array($result,MYSQL_ASSOC)) {
-    
-// }
 echo json_encode($responce);
 
 

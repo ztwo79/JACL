@@ -264,7 +264,8 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 	  	$(".item").dblclick(function(event) {
 	  		// alert();
 	  		var tablename = $(this).find(".fancytree-title").html();
-	  		$('#file_content', window.parent.document).prop("src" , "file_content.php?table_name="+tablename);
+	  		// $('#file_content', window.parent.document).prop("src" , "file_content.php?table_name="+tablename);
+	  		$('#file_content', window.parent.document).prop("src" , "jqgrid.php?table_name="+tablename);
 	  	});
 
 	});
