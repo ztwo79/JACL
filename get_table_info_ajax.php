@@ -4,12 +4,12 @@ include "include/config.php";
 
 
 
-// $table_name="employee_list";
+// $db_table_name="employee_list";
 // get table column  
 try {
-	$stmt = $db_conn->query("SELECT COLUMN_NAME,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM  information_schema.columns where TABLE_SCHEMA='acl_online' and TABLE_NAME='$table_name' and COLUMN_NAME != 'key_id'  order by ORDINAL_POSITION ");
+	$stmt = $db_conn->query("SELECT COLUMN_NAME,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM  information_schema.columns where TABLE_SCHEMA='acl_online' and TABLE_NAME='$db_table_name' and COLUMN_NAME != 'key_id'  order by ORDINAL_POSITION ");
 	//@debug
-	// echo "SELECT COLUMN_NAME,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM  information_schema.columns where TABLE_SCHEMA='acl_online' and TABLE_NAME='$table_name' and COLUMN_NAME != 'key_id'  order by ORDINAL_POSITION <br>";
+	// echo "SELECT COLUMN_NAME,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH FROM  information_schema.columns where TABLE_SCHEMA='acl_online' and TABLE_NAME='$db_table_name' and COLUMN_NAME != 'key_id'  order by ORDINAL_POSITION <br>";
 	if ($stmt===false) {
 		throw new Exception('取得資料表內容出現錯誤');
 	}
@@ -27,6 +27,7 @@ $col_name_arr = array("key_id");
 $key_id->name="key_id";
 $key_id->index="key_id";
 $key_id->width=120;
+// $key_id->sortable=false;
 $colModel_arr[]=$key_id;	
 // 
 while($row = $stmt->fetch()) {
@@ -34,6 +35,7 @@ while($row = $stmt->fetch()) {
 	$obj_name =	$row["COLUMN_NAME"];
 	$$obj_name->name=$row["COLUMN_NAME"];
 	$$obj_name->index=$row["COLUMN_NAME"];
+	
 	$data_type = $row["DATA_TYPE"];
 	$CHARACTER_MAXIMUM_LENGTH = $row["CHARACTER_MAXIMUM_LENGTH"];
 	switch ($data_type) {

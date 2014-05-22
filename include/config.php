@@ -15,9 +15,10 @@ mysql_query("SET NAMES 'utf8'");
 mysql_select_db($DB_name, $conn) or die(mysql_error());
 
 
-// 
+// POD connection
 try {
 	$db_conn = new PDO("mysql:host=$HOST;dbname=$DB_name", $USER, $PASSWORD);
+	$db_conn->exec("set names utf8");
 } catch (PDOException $e) {
 	echo "Could not connect to database ".$e->getMessage();; 
 	exit;

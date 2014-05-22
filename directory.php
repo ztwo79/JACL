@@ -1,3 +1,4 @@
+<meta charset="utf-8"/>
 <?php
 
 include "include/config.php";
@@ -5,140 +6,261 @@ include "include/utility.php";
 
 
 
-
-
-
-
-
+$sUid=1;
 $ALC_project_file="Metaphor_Employee_Data.ACL";
 $ALC_project_src="ACL DATA/$ALC_project_file";
 
-$ALC_project_file_fp=fopen($ALC_project_src , "r");
-$all_size=filesize($ALC_project_src);
-$all=fread($ALC_project_file_fp, $all_size);
-$all=mb_convert_encoding($all, 'UTF-8', 'UTF-16LE');
 
-$data_arr=explode("\n", $all);
 
-if (!empty($data_arr)) {
-	foreach ($data_arr as $line => $each_line) {
-		// get table name
-		$table_chk = strpos($each_line,"^LAYOUT");				
-		if ($table_chk!==false) {			
-			// echo $line. "   ". $each_line."<br>";
-			$table_arr=explode(" ", $each_line);
-			$table_arr = array_diff($table_arr, array(null,'null','',' '));
-			$table_name =  next($table_arr);
-			
-			$get_table_detail_chk=true;
-			$table_length =  next($table_arr);
+// 先讀取使用者是否已經有此專案
+try {
+	$sql = "SELECT * from directory_structure where sUid='$sUid' and parent_id='0' and type='root_folder' and ACL_file='$ALC_project_file'";
+	$stmt = $db_conn->prepare($sql);
+	$exe=$stmt->execute();
+	if ($exe===false) {
+		throw new PDOException('取得專案目錄資料夾出現錯誤');
+	}
+	$root_folder_rs = $stmt->fetch();
+	$root_folder_id = $root_folder_rs["d_id"];
+	
+} catch (PDOException $e) {
+	$error = $db_conn->errorInfo();
+	echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+	echo "錯誤行數: " . $e->getline()."<br>";
+	// echo "錯誤內容: " . $error[2];
+	die();
+}
 
-			// get table file  length od each line
-			$table_description[$table_name]["line_length"] = $table_length;
-			$table_length_count=0;
-			$table_col_arr=array();
-			continue;
+$root_folder->name="Metaphor_Employee_Data.ACL";
+
+// 有建立過此專案
+if (!empty($root_folder_id)) {
+	// 取得第一層的資料
+	try {
+		$sql = "SELECT * from directory_structure where sUid='$sUid' and parent_id='$root_folder_id'";
+		$stmt = $db_conn->prepare($sql);
+		$exe = $stmt->execute();
+		if ($exe===false) {
+			throw new PDOException('取得專案目錄第一層資料夾出現錯誤');
 		}
-		// get table detail information
-		if ($get_table_detail_chk) {
-			$table_detail_arr=explode(" ", $each_line);
-			$table_detail_arr = array_diff($table_detail_arr, array(null,'null','',' '));
-			$col_name=current($table_detail_arr);
-			$col_type=next($table_detail_arr);
-			$col_index = next($table_detail_arr);
-			$col_length = next($table_detail_arr);
-			$detail_index = $col_index+$col_length-1;
-
-
-
-
-			$table_description[$table_name]["col_name"][]=$col_name;
-			$table_description[$table_name]["col_start"][]=$col_index;
-			$table_description[$table_name]["col_length"][]=$col_length;
-			$table_description[$table_name]["col_type"][]=$col_type;
-			$decimal_dot="";
-			switch ($col_type) {
-				case 'NUMERIC':
-					$sql_type="INT";
-					$decimal_dot = next($table_detail_arr);
-				break;
-
-				case 'DATETIME':
-					$sql_type="varchar(10)";
-				break;
-
-				case 'ACL':
-					$sql_type="double";
-					$decimal_dot = next($table_detail_arr);
-				break;
-				// VARCHAR
-				default:
-					$sql_type="varchar($col_length)";
-				break;
-			}		
-			
-			// digit after decimal 
-			$table_description[$table_name]["decimal_dot"][]=$decimal_dot;
-			// col sql type
-			$table_col_arr[]="`$col_name` $sql_type".' NULL';
-			// reach the last column
-			if ($detail_index==$table_length ) {				
-				$get_table_detail_chk=false;				
-				if (!empty($table_col_arr)) {
-					$table_col_sql=implode(",", $table_col_arr);					
+	} catch (PDOException $e) {
+		$error = $db_conn->errorInfo();
+		echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+		echo "錯誤行數: " . $e->getline()."<br>";
+		// echo "錯誤內容: " . $error[2];
+		die();
+	}
+	while($row = $stmt->fetch()) {
+		$d_id = $row["d_id"];
+		$name = $row["name"];
+		$content_table = $row["content_table"];
+		$type = $row["type"];
+		$directory_arr[$d_id]["name"]=$name;
+		$directory_arr[$d_id]["content_table"]=$content_table;
+		$directory_arr[$d_id]["type"]=$type;
+		// 資料夾需確認資料夾內有無資料
+		if ($type==="folder") {
+			try {
+				$sql = "SELECT COUNT(*) as folder_chk from directory_structure where sUid='$sUid' and parent_id='$d_id'";
+				$folder_chk_stmt = $db_conn->prepare($sql);
+				$exe = $folder_chk_stmt->execute();
+				if ($exe===false) {
+					throw new PDOException('取得專案目錄資料夾出現錯誤');
 				}
+			} catch (PDOException $e) {
+				$error = $db_conn->errorInfo();
+				echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+				echo "錯誤行數: " . $e->getline()."<br>";
+				// echo "錯誤內容: " . $error[2];
+				die();
+			}
+			$folder_chk  = $folder_chk_stmt->fetchColumn();
+			$directory_arr[$d_id]["folder_chk"]=$folder_chk;
+		}
+	}
+}
 
-				// $res = $db_conn->query("SHOW TABLES LIKE '".$table_name."';SELECT FOUND_ROWS();");
-				// echo "SHOW TABLES LIKE '".$table_name."';SELECT FOUND_ROWS();";
-				// $num_rows = $res->fetchColumn();
-				// echo $num_rows."<br>";
-				// die;
+
+// 使用者還沒有該專案 建立該專案
+if (empty($root_folder_id)) {
+
+	// 讀取專案檔
+	$ALC_project_file_fp=fopen($ALC_project_src , "r");
+	$all_size=filesize($ALC_project_src);
+	$all=fread($ALC_project_file_fp, $all_size);
+	$all=mb_convert_encoding($all, 'UTF-8', 'UTF-16LE');
+
+
+
+	// 把專案檔輸入進資料庫
+	$insert_arr = array(
+		"sUid"          => $sUid,
+		"root_id"      => 0,				
+		"parent_id"      => 0,				
+		"type"      => "root_folder",		
+		"ACL_file"      => $ALC_project_file
+	);			
+	try {
+		$insert_sql  = "INSERT INTO directory_structure";
+		$insert_sql .= " (".implode(",", array_keys($insert_arr)).")";
+		$insert_sql .= " VALUES ('".implode("', '", $insert_arr)."') ";
+		$stmt = $db_conn->exec($insert_sql);
+		$root_folder_id = $db_conn->lastInsertId();
+		if ($stmt===false) {
+			throw new PDOException('新增專案目錄資料夾錯誤');
+		}
+	} catch (PDOException $e) {
+		$error = $db_conn->errorInfo();
+		echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+		echo "錯誤行數: " . $e->getline()."<br>";
+		// echo "錯誤內容: " . $error[2];
+		die();
+	}
+
+	$data_arr=explode("\n", $all);
+
+	if (!empty($data_arr)) {
+		foreach ($data_arr as $line => $each_line) {
+			// 取得資料表名稱
+			$table_chk = strpos($each_line,"^LAYOUT");				
+			if ($table_chk!==false) {			
+				// echo $line. "   ". $each_line."<br>";
+				$table_arr=explode(" ", $each_line);
+				$table_arr = array_diff($table_arr, array(null,'null','',' '));
+				$table_name =  next($table_arr);
 				
-				// echo mysql_num_rows(mysql_query("SHOW TABLES LIKE '".$table_name."'"))."<br>";
+				// 在資料庫裡面的 資料表名稱
+				$table_db_name = "table".uniqid();
+				$table_description[$table_name]["table_db_name"] = $table_db_name;
+
+				$get_table_detail_chk=true;
+				$table_length =  next($table_arr);
+
+				// 取得 資料表 長度 內容格式
+				$table_description[$table_name]["line_length"] = $table_length;
+				$table_length_count=0;
+				$table_col_arr=array();
+				continue;
+			}
+
+			// 取得資料表內容 並輸入進資料庫
+			if ($get_table_detail_chk) {
+				$table_detail_arr=explode(" ", $each_line);
+				$table_detail_arr = array_diff($table_detail_arr, array(null,'null','',' '));
+				$col_name=current($table_detail_arr);
+				$col_type=next($table_detail_arr);
+				$col_index = next($table_detail_arr);
+				$col_length = next($table_detail_arr);
+				$detail_index = $col_index+$col_length-1;
+
+
+				$table_description[$table_name]["col_name"][]=$col_name;
+				$table_description[$table_name]["col_start"][]=$col_index;
+				$table_description[$table_name]["col_length"][]=$col_length;
+				$table_description[$table_name]["col_type"][]=$col_type;
+				$decimal_dot="";
+				switch ($col_type) {
+					case 'NUMERIC':
+						$sql_type="INT";
+						$decimal_dot = next($table_detail_arr);
+					break;
+
+					case 'DATETIME':
+						$sql_type="varchar(10)";
+					break;
+
+					case 'ACL':
+						$sql_type="double";
+						$decimal_dot = next($table_detail_arr);
+					break;
+					// VARCHAR
+					default:
+						$sql_type="varchar($col_length)";
+					break;
+				}		
 				
-				// check table is existing or not
-				if(mysql_num_rows(mysql_query("SHOW TABLES LIKE '".$table_name."'"))==1) {
-					$table_description[$table_name]["table_chk"]=true;
-				}else{
-					$table_description[$table_name]["table_chk"]=false;
+				// 小數點後幾位
+				$table_description[$table_name]["decimal_dot"][]=$decimal_dot;
+				// 存入資料庫的資料型態
+				$table_col_arr[]="`$col_name` $sql_type".' NULL';
+				// 取得最後一個col 
+				if ($detail_index==$table_length ) {				
+					$get_table_detail_chk=false;				
+					if (!empty($table_col_arr)) {
+						$table_col_sql=implode(",", $table_col_arr);					
+					}
+					
 					// create table sql
-					$create_table_sql="CREATE TABLE IF NOT EXISTS $table_name (";
+					$create_table_sql="CREATE TABLE $table_db_name (";
 					$create_table_sql.=$table_col_sql;				
 					$create_table_sql.=",key_id  INT  AUTO_INCREMENT  NOT NULL ,INDEX (key_id)";
-					$create_table_sql.=")";				
-					// mysql_query($create_table_sql) or die("資料表新增失敗");
+					$create_table_sql.=")";
 					try {
 						$db_conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 						$stmt = $db_conn->exec($create_table_sql);
 					} catch (PDOException $e) {						
-						die("新增資料表時出現錯誤   錯誤如下 <br>" . $e->getMessage());
+						echo "新增資料表時出現錯誤   錯誤如下 <br>" . $e->getMessage();
+						echo "錯誤行數: " . $e->getline()."<br>";
+						die();
 					}			
-				}				
+								
+				}
 			}
-		}
 
 
+					
+			// 取得需要輸入資料表的內容
+			$table_file_chk = strpos($each_line,"^FORMAT");				
+			if ($table_file_chk!==false) {						
+				$table_file_arr=explode(" ", $each_line);
+				$table_file_arr = array_diff($table_file_arr, array(null,'null','',' '));
+				$table_file_arr=array_values($table_file_arr);
+				$insert_table = $table_file_arr[1];
+				$table_file_name= str_replace('"', "", $table_file_arr[4]);
+				// 資料庫內表的名稱
+				$table_db_name=$table_description[$insert_table]["table_db_name"];						
+
+				$each_ling_length=$table_description[$insert_table]["line_length"]+1;
+				$col_name_arr =  $table_description[$insert_table]["col_name"];
+				$col_width_arr =  $table_description[$insert_table]["col_length"];
+				$col_start_arr =  $table_description[$insert_table]["col_start"];
+				$col_type_arr =  $table_description[$insert_table]["col_type"];
+				$col_decimal_dot_arr =  $table_description[$insert_table]["decimal_dot"];
+				$arr_count = count($col_start_arr)-1;
+
+									
+				// 輸入資料夾進入資料庫
+				$insert_arr = array(
+					"sUid"          => $sUid,
+					"root_id"      => $root_folder_id,
+					"parent_id"      => $root_folder_id,
+					"name"       => $insert_table,
+					"content_table" => $table_db_name,
+					"type"       => "table",
+					"ACL_file"       => "$table_file_name"
+				);			
+				$insert_sql  = "INSERT INTO directory_structure";
+				$insert_sql .= " (".implode(",", array_keys($insert_arr)).")";
+				$insert_sql .= " VALUES ('".implode("', '", $insert_arr)."') ";
+				$stmt = $db_conn->exec($insert_sql);
+				try {
+					if ($stmt===false) {
+						throw new PDOException('新增專案目錄資料夾錯誤');
+					}
+				} catch (PDOException $e) {
+					$error = $db_conn->errorInfo();
+					echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+					echo "錯誤行數: " . $e->getline()."<br>";
+					// echo "錯誤內容: " . $error[2];
+					die();
+				}
+				$d_id = $db_conn->lastInsertId(); 
+				// 放入第一層的資料 展示
+				$directory_arr[$d_id]["name"]=$insert_table;
+				$directory_arr[$d_id]["content_table"]=$table_db_name;
+				$directory_arr[$d_id]["type"]="table";
 				
-		// get insert table file
-		$table_file_chk = strpos($each_line,"^FORMAT");				
-		if ($table_file_chk!==false) {						
-			$table_file_arr=explode(" ", $each_line);
-			$table_file_arr = array_diff($table_file_arr, array(null,'null','',' '));
-			$table_file_arr=array_values($table_file_arr);
-			$insert_table = $table_file_arr[1];
-			$table_file_name= str_replace('"', "", $table_file_arr[4]);
-			$each_ling_length=$table_description[$insert_table]["line_length"]+1;						
-			$col_name_arr =  $table_description[$insert_table]["col_name"];
-			$col_width_arr =  $table_description[$insert_table]["col_length"];
-			$col_start_arr =  $table_description[$insert_table]["col_start"];
-			$col_type_arr =  $table_description[$insert_table]["col_type"];
-			$col_decimal_dot_arr =  $table_description[$insert_table]["decimal_dot"];
-			$arr_count = count($col_start_arr)-1;
-
-			// T:table had been created F:first created
-			$table_chk = $table_description[$insert_table]["table_chk"];
-			// first created , so has to insert data
-			if ($table_chk===false) {
+		
 				// open table file
 				$insert_table_file_src="ACL DATA/table_file/$table_file_name";
 				$insert_table_file = fopen($insert_table_file_src, "rb");
@@ -177,21 +299,27 @@ if (!empty($data_arr)) {
 	 						$insert_table_arr[]=trim($line_data);
 	 					}
 	 					// insert table sql
-	 					$insert_sql  = "INSERT INTO $insert_table";
+	 					$insert_sql  = "INSERT INTO $table_db_name";
 	 					$insert_sql .= " (".implode(",", ($col_name_arr)).")";
 	 					$insert_sql .= " VALUES ('".implode("', '", $insert_table_arr)."') ";
 	 					try {
 							$db_conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 							$stmt = $db_conn->exec($insert_sql);
 						} catch (PDOException $e) {						
-							die("輸入資料時出現錯誤   錯誤如下 <br>" . $e->getMessage());
+							echo "輸入資料時出現錯誤   錯誤如下 <br>" . $e->getMessage();
+							echo "錯誤行數: " . $e->getline()."<br>";
+							die();
 						}		
 	 				}
 				}
 			}
-		}
-	}//foreach ($data_arr as $line => $each_line) {
-}//if (!empty($data_arr)) {
+		}//foreach ($data_arr as $line => $each_line) {
+	}//if (!empty($data_arr)) {
+
+}
+
+
+
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -241,82 +369,126 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 
 	<script type="text/javascript">
 	$(document).ready(function() {
-	  	$("#tree").fancytree();
-	  	// {
-	  // 		activate: function(event, data){
-			// 	var node = data.node;
-			// 	// alert(node.data.test);
+	  	$("#tree").fancytree({
 
-			// 	// $.ui.fancytree.debug("activate: event=", event, ", data=", data);
-			// 	// if(!$.isEmptyObject(node.data)){
-			// 	// 	alert("custom node data: " + JSON.stringify(node.data));
-			// 	// }
-			// },
+	  		clickFolderMode: 3, // 1:activate, 2:expand, 3:activate and expand, 4:activate (dblclick expands)
+	  		click: function(event, data) {
+		    	var node = data.node;
+		    	var tablename = node.data.tablename;
+		    	var type = node.data.type;
+		    	var test = node.data.test;
+		    	
+		    	
+		    	// alert(id);
+		    	// alert(node.data.test);
+		    	// alert(node.data.dbtable);
+		    	
+		    	
+		    	// alert($(this).html());
+				if (type==="table") {
+					$(this).find("."+tablename).removeClass('table_img').addClass('table_img_active');
+				};
+		    		// Sample: add an hierarchic branch using code.
+			      // This is how we would add tree nodes programatically
+			    if (type==="folder") {
+					var openstatus = node.data.openstatus;
+					
+					// $(this).html().find('#useless').remove();
+					
+					 // $("#tree").fancytree("getTree").activateKey("useless");
+					 
 
 
-	  	// }
-	  	// );
+					if (openstatus==="unopen") {
+						
+						var d_id = node.data.did;
+						alert(d_id);
+
+						// 切換為已開啟
+						node.data.openstatus="";
+						
+						// 取得資料夾內的內容
+						// $.ajax({ url: 'directory_ajax.php' ,
+						// 	cache: false,
+						// 	dataType: 'html',// <== 設定傳送格式
+						// 	type:'GET',// <== 設定傳值方式
+						// 	data: { action: "get_subdirectory" },// <== 傳GET的變數，此例是gsn
+						// 	error: function(xhr) { alert('Ajax request 發生錯誤'+ xhr); },
+						// 	success: function(response) {
+						// 	$('#gname').html( response );
+						// 	}
+						// });
+
+						// 使用id 取得節點 並刪掉不需要的節點
+						$("#tree").fancytree("getTree").getNodeByKey("useless").remove();
+						var childNode = node.addChildren({
+				        	title: "Programatically addded nodes",
+				        	tooltip: "This folder and all child nodes were added programmatically.",
+				        	folder: true,
+				        	test:"123"
+					    });
+					    childNode.addChildren({
+					        title: "Document using a custom icon",
+					        icon: "customdoc1.gif"
+					    });	
+					};
+					
+			            	
+			    };
+			      
 
 
-	  	$(".item").click(function(event) {
-	  		$(this).removeClass('table_img').addClass('table_img_active');
+			        
+		    },
+			dblclick: function(event, data) {
+				// 當下這個節點
+				var node = data.node;
+				// 取得table的名稱
+				var tablename = node.data.tablename;
+				// 該table的資料表
+				var dbtable = node.data.dbtable;
+				var type = node.data.type;
+				if (type==="table") {
+					// 開啟動態table
+					$('#file_content', window.parent.document).get(0).contentWindow.set_dynamic_table(tablename , dbtable);	
+				};
+			},
 	  	});
-	  	$(".item").dblclick(function(event) {
-	  		// alert();
-	  		var tablename = $(this).find(".fancytree-title").html();
-	  		// $('#file_content', window.parent.document).prop("src" , "file_content.php?table_name="+tablename);
-	  		$('#file_content', window.parent.document).prop("src" , "jqgrid.php?table_name="+tablename);
-	  	});
-
+	  	
 	});
 		
 	</script>
 	
 </head>
 <body>
-
 	<div id="tree">
 	    <ul>
 	      	<li class="folder expanded"><?echo $ALC_project_file;?>
 		        <ul>		          
 		        <?php
-					foreach ($table_description as $table_name => $value) {						
-						?>
-							<li class="table_img item"  data-test="test" ><span class='folder'><?echo $table_name?></span></li>
-						<?
-					}
+		        	if (!empty($directory_arr)) {
+		        		foreach ($directory_arr as $d_id => $directory_data) {
+		        			$name = $directory_data["name"];
+		        			$table_db_name = $directory_data["content_table"];
+		        			$folder_chk = $directory_data["folder_chk"];
+
+		        			if ($directory_data["type"]=="folder" ) {
+		        				$folder_data="";
+		        				if ($folder_chk>0) {
+		        					$folder_data='<ul><li id="useless">useless</li></ul>';
+		        				}
+		        				// 多useless 為了讓資料夾看起來可以展開
+		        				echo '<li class="folder" data-type="folder" data-openstatus="unopen" data-did="'.$d_id.'" >'.$name.$folder_data.'</li>';
+		        			}elseif($directory_data["type"]=="table" ){
+								echo '<li class="table_img '.$name.'" data-dbtable="'.$table_db_name.'" data-tablename="'.$name.'" data-type="table"><span class="folder">'.$name.'</span></li>';
+		        			}
+						}
+		        	}
 				?>	
 		        </ul>
 			</li>
 	    </ul>
   	</div>
-<!--   	<li class="folder expanded">Override CSS style per node
-	        <ul>
-	          <li class="custom1">class="custom1": Additional classes are copied over to outer &lt;span>
-	          <li class="folder custom1">class="custom1": Additional classes are copied over to outer &lt;span>
-	        </ul>
-
-	      <li class="folder expanded">Use 'data-NAME' attributes to define additional data
-	        <ul>
-	          <li data-icon="customDoc1.gif">Node with standard CSS, but custom icon
-	          <li class="folder" data-icon="folder_docs.gif">Folder with standard CSS but custom icon
-	          <li data-iconclass="ui-icon ui-icon-heart">'iconclass' is directly added to the image &lt;span>, so jQuery stock icons may be used
-	        </ul>
-
-	      <li class="folder expanded">Use 'data-json' attribute to define additional data
-	        <ul>
-	          <li data-json='{"icon": "customDoc1.gif"}'>Node with standard CSS, but custom 'data-icon'
-	        </ul>
-
-	      <li class="folder expanded">Use render callback
-	        <ul>
-	          <li id="renderNode1" data-cstrender="true">Node hat will be handled by 'render' calback
-	        </ul>
- -->
-
-
-
-
 </body>
 </html>
 

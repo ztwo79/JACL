@@ -4,10 +4,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>INDEX</title>
+    <title>JACL</title>
 
     <!-- Bootstrap -->
     <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/submenu.css" rel="stylesheet">
+    <link href="css/index.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -15,32 +17,39 @@
       <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <script type="text/javascript">
-
-    </script>
-    <style type="text/css">
-    .dropdown-submenu{position:relative;}
-    .dropdown-submenu>.dropdown-menu{top:0;left:100%;margin-top:-6px;margin-left:-1px;-webkit-border-radius:0 6px 6px 6px;-moz-border-radius:0 6px 6px 6px;border-radius:0 6px 6px 6px;}
-    .dropdown-submenu:hover>.dropdown-menu{display:block;}
-    .dropdown-submenu>a:after{display:block;content:" ";float:right;width:0;height:0;border-color:transparent;border-style:solid;border-width:5px 0 5px 5px;border-left-color:#cccccc;margin-top:5px;margin-right:-10px;}
-    .dropdown-submenu:hover>a:after{border-left-color:#ffffff;}
-    .dropdown-submenu.pull-left{float:none;}.dropdown-submenu.pull-left>.dropdown-menu{left:-100%;margin-left:10px;-webkit-border-radius:6px 0 6px 6px;-moz-border-radius:6px 0 6px 6px;border-radius:6px 0 6px 6px;}
-    .show_td{
-        border: 3px  ridge ;
-    }
-    </style>
   </head>
   <body>
-    
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="js/jquery-1.11.0.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="js/index.js"></script>
+
+    <!-- Extract Modal -->
+    <div class="modal fade modal-dialog-center" id="myModal"  tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel">Extract</h4>
+          </div>
+          <div class="modal-body">
+                <span>to: </span> <input id="extract_input" type="text" value="">
+          </div>
+          <div class="modal-footer">
+            <button id="extract_sumit_btn" type="button" class="btn btn-primary">確定</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <div class="container">
       
         <div class="row">
             <!-- title name -->
-            <div class="col-md-12"><h1 class="text-muted">ACL Analytics</h1></div>      
+            <div class="col-md-12"><h1 class="text-muted">JACL Analytics</h1></div>      
         </div>  
         <div class="row">        
             <nav class="navbar navbar-default" role="navigation">
@@ -117,7 +126,7 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">Data<b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a tabindex="-1" href="#">Extract Data</a></li>                                         
+                            <li><a tabindex="-1" href="#" id="extrat_data">Extract Data</a></li>                                         
                             <li><a tabindex="-1" href="#">Export To Other Application</a></li>
                             <li class="divider"></li>
                             <li class="dropdown-submenu"><a tabindex="-1" href="#">Crystal</a>
@@ -223,10 +232,12 @@
             </nav>       
         </div><!-- row -->
         <div class="row">
-            <div class="col-md-3 show_td" ><iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe></div>  
-            <!-- <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="file_content.php" width="100%" height="700" frameborder="0"></iframe></div>   -->
-            <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="jqgrid.php" width="100%" height="700" frameborder="0"></iframe></div>  
+            <div class="col-md-3 show_td" ><iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe></div>
+            <!-- <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="jqgrid.php" width="100%" height="700" frameborder="0"></iframe></div>   -->
+            <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="tab.php" width="100%" height="700" frameborder="0"></iframe></div>  
         </div>      
     </div><!-- main container -->
+ 
+    
   </body>
 </html>

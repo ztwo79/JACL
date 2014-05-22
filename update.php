@@ -1,17 +1,23 @@
+<meta charset="utf-8">
 <?PHP
 
 include "include/config.php";
-
-
 $Update_SQL_arr = array(
-	array('check' => "SELECT count from detail_show_setting", 'update' => "CREATE TABLE IF NOT EXISTS `detail_show_setting` (
-																				  `show_id` BIGINT NOT NULL auto_increment,																				  
-																				  `sUid` int(11) default NULL,
-																				  `show_module_list` varchar(65535) collate utf8_unicode_ci default NULL,
-																				  `show_process_list` varchar(65535) collate utf8_unicode_ci default NULL,																				  
-																				  INDEX (show_id),
-																				  UNIQUE (show_id)
+	array('check' => "SELECT * from directory_structure", 'update' => "CREATE TABLE IF NOT EXISTS `directory_structure` (
+																				  d_id BIGINT NOT NULL auto_increment,																				  
+																				  sUid int(11)  NULL,
+																				  root_id BIGINT  NULL,
+																				  parent_id BIGINT  NULL,
+																				  name varchar(200)  NULL,																				  
+																				  content_table varchar(200)  NULL,																				  
+																				  ACL_file varchar(200)  NULL,																				  
+																				  type varchar(20)  NULL,
+																				  UNIQUE(d_id)
 																				)"),
+
+
+
+
 );
 // array( 'check' => "SELECT `o_id` from `data_process`", 'update' => "ALTER TABLE  `data_process` ADD  `o_id` INT NOT NULL" ),
 

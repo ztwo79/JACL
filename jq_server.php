@@ -8,11 +8,11 @@ if(!$sidx) $sidx =1;
 
 // $page=1;
 // $limit=20;
-// $table_name="employee_list";
+// $db_table_name="employee_list";
 
 // get total row
 try {
-	$stmt = $db_conn->query("SELECT COUNT(*) FROM $table_name");
+	$stmt = $db_conn->query("SELECT COUNT(*) FROM $db_table_name");
 	if ($stmt===false) {
 		throw new Exception('取得資料總筆數出現錯誤');
 	}
@@ -46,7 +46,7 @@ $responce->records = $count;
 
 // get table data
 try {
-	$stmt = $db_conn->query("SELECT COUNT(*) AS total_col from information_schema.columns  where TABLE_NAME='$table_name'");
+	$stmt = $db_conn->query("SELECT COUNT(*) AS total_col from information_schema.columns  where TABLE_NAME='$db_table_name'");
 	if ($stmt===false) {
 		throw new Exception('取得資料表總欄位數出現錯誤');
 	}
@@ -61,7 +61,7 @@ $total_col= $stmt->fetchColumn()-1;
 
 // get table data
 try {
-	$stmt = $db_conn->query("SELECT * FROM $table_name ORDER BY $sidx $sord LIMIT $start , $limit");
+	$stmt = $db_conn->query("SELECT * FROM $db_table_name ORDER BY $sidx $sord LIMIT $start , $limit");
 	if ($stmt===false) {
 		throw new Exception('取得資料表內容出現錯誤');
 	}
@@ -86,8 +86,8 @@ while($row = $stmt->fetch()) {
     $responce->rows[$row_counter]['cell'] = $data_arr;
     $row_counter++;
 }
-
 echo json_encode($responce);
+
 
 
 

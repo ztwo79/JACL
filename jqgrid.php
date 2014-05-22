@@ -1,3 +1,21 @@
+<?php
+//取得GET
+if ($_GET) {
+	foreach ($_GET as $key => $value) {
+    	$$key=$value; 
+	}
+}	
+
+//避免GET的值被GET蓋掉
+// 取得POST
+if ($_POST) {
+	foreach ($_POST as $key => $value) {
+    	if (empty($$key)) {
+    		$$key=$value; 
+    	}        	
+	}
+}
+?>
 <!doctype html>
 <html lang="zh_TW">
 <head>
@@ -9,7 +27,6 @@
 	<!-- jqgrid -->
 	<link rel="stylesheet" type="text/css" media="screen" href="lib/jquery.jqGrid/css/ui.jqgrid.css" />
 	<link rel="stylesheet" type="text/css" media="screen" href="lib/jquery.jqGrid/css/ui.multiselect.css" />
-
 	<script src="js/jquery-1.11.0.min.js" type="text/javascript"></script>
 	<!-- <script src="http://code.jquery.com/jquery-migrate-1.2.1.js"></script> -->
 
@@ -36,69 +53,91 @@
 
 	<script type="text/javascript">
 		$(document).ready(function() {
-			var table_name = "employee_list";
-			$.ajax({ url: 'get_table_info_ajax.php' ,
-		        cache: false,
-		        dataType: 'html',// <== 設定傳送格式
-		        type:'GET',// <== 設定傳值方式
-		        data: { table_name: table_name  },// <== 傳GET的變數，此例是gsn
-		        error: function(xhr) { alert('Ajax request 發生錯誤'+ xhr); },
-		        success: function(response) {
-		        	// alert(response);
-		            
-		            var table_info_obj = $.parseJSON(response);
-		            // col name
-		            var colNames_arr = table_info_obj.colNames_arr;
-		            // col data type
-		            var colModel_arr = table_info_obj.colModel_arr;
-		            
-		            // 格式範例
-		            // colNames: [ 'key_id', 'First_Name', 'Last_Name', 'CardNum', 'EmpNo', 'HireDate', 'Salary', 'Bonus_2005'],
-		            // JSON 格式
-					// var colModel_arr = [
-					//    		{name:'key_id',index:'key_id', width:100},
-					//    		{name:'First_Name',index:'First_Name', width:90},
-					//    		{name:'Last_Name',index:'Last_Name', width:90},
-					//    		{name:'CardNum',index:'CardNum', width:80, align:"right"},
-					//    		{name:'EmpNo',index:'EmpNo', width:80, align:"right"},		
-					//    		{name:'HireDate',index:'HireDate', width:80,align:"right"},		
-					//    		{name:'Salary',index:'Salary', width:80,align:"right"},		
-					//    		{name:'Bonus_2005',index:'Bonus_2005', width:80,align:"right"}
-					//    		// {name:'name',index:'name asc, invdate', width:100},
-					//    		// {name:'Bonus_2005',index:'Bonus_2005', width:80,align:"right" , sortable:false}
-					// ];
+			// 資料表的名稱
+			var table_name = $("#table_name").val();
+			// 資料庫內該資料表的名稱
+			var db_table_name = $("#db_table_name").val();
 
-					jQuery("#table_list").jqGrid({
-					   	url:'jq_server.php?table_name='+table_name,
-						datatype: "json",
-					   	colNames: colNames_arr,
-					   	colModel: colModel_arr,
-					   	// default row
-					   	rowNum:30,
-					   	rowList:[30,50,100],
-					   	pager: '#pager',
-					    viewrecords: true,
-					    sortname: 'key_id',
-					    sortorder: "asc",
-					    // width: 500,
-						// set 100% it wll auto resize
-						height: "100%",
-						// autowidth:true,
-					    caption:"JSON Example",
-					    // colunm drag and drop
-					    sortable:true
-					});
-					jQuery("#table_list").jqGrid('navGrid','#pager',{edit:false,add:false,del:false});
-		        }
-		    });
+			if (db_table_name.length>0) {
+				$.ajax({ url: 'get_table_info_ajax.php' ,
+			        cache: false,
+			        dataType: 'html',// <== 設定傳送格式
+			        type:'GET',// <== 設定傳值方式
+			        data: { db_table_name: db_table_name  },// <== 傳GET的變數，此例是gsn
+			        error: function(xhr) { alert('Ajax request 發生錯誤'+ xhr); },
+			        success: function(response) {
+			        	// alert(response);
+			            
+			            var table_info_obj = $.parseJSON(response);
+			            // col name
+			            var colNames_arr = table_info_obj.colNames_arr;
+			            // col data type
+			            var colModel_arr = table_info_obj.colModel_arr;
+			            
+			            // 
+			            colNames_arr[0]="id";
 
-		});
+			            // 格式範例
+			            // colNames: [ 'key_id', 'First_Name', 'Last_Name', 'CardNum', 'EmpNo', 'HireDate', 'Salary', 'Bonus_2005'],
+			            // JSON 格式
+						// var colModel_arr = [
+						//    		{name:'key_id',index:'key_id', width:100},
+						//    		{name:'First_Name',index:'First_Name', width:90},
+						//    		{name:'Last_Name',index:'Last_Name', width:90},
+						//    		{name:'CardNum',index:'CardNum', width:80, align:"right"},
+						//    		{name:'EmpNo',index:'EmpNo', width:80, align:"right"},		
+						//    		{name:'HireDate',index:'HireDate', width:80,align:"right"},		
+						//    		{name:'Salary',index:'Salary', width:80,align:"right"},		
+						//    		{name:'Bonus_2005',index:'Bonus_2005', width:80,align:"right"}
+						//    		// {name:'name',index:'name asc, invdate', width:100},
+						//    		// {name:'Bonus_2005',index:'Bonus_2005', width:80,align:"right" , sortable:false}
+						// ];
+						jQuery("#table_list").jqGrid({
+						   	url:'jq_server.php?db_table_name='+db_table_name,
+							// ajaxGridOptions: { contentType: 'application/json; charset=utf-8' },
+							datatype: "json",
+						   	colNames: colNames_arr,
+						   	colModel: colModel_arr,
+						   	// default row
+						   	rowNum:30,
+						   	rowList:[30,50,100],
+						   	pager: '#pager',
+						    viewrecords: true,
+						    sortname: 'key_id',
+						    sortorder: "asc",
+						    // width: 500,
+							// set 100% it wll auto resize
+							height: "100%",
+							width: "100%",
+							// autowidth:true,
+						    caption: table_name,
+						    // colunm drag and drop
+						    sortable:true
+						    
+						});
+						jQuery("#table_list").jqGrid('navGrid','#pager',{edit:false,add:false,del:false});
 
+						// cancel table_list_key_id sortable
+						$('tr.ui-jqgrid-labels').sortable({ cancel: 'th#table_list_key_id'});
+						// force other element can't sort table_list_key_id
+						$('tr.ui-jqgrid-labels').sortable({ items: "th:not(#table_list_key_id)" });
+
+						// $(window.parent.document).resize_heigth();
+						$('.ui-pg-selbox').on('change', function(event) {
+							event.preventDefault();
+							// $('#dynamic_table_content', window.parent.document).get(0).contentWindow.resize_heigth();
+						});
+			        }
+			    });
+			}
 		
+		});
 	
 	</script>
 </head>
 <body>
+	<input type="hidden" value="<?echo $table_name;?>" id="table_name">
+	<input type="hidden" value="<?echo $db_table_name;?>" id="db_table_name">
 	<table id="table_list"></table>
 	<div id="pager"></div>
 </body>
