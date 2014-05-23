@@ -1,12 +1,14 @@
 <meta charset="utf-8"/>
 <?php
-
+session_start();
 include "include/config.php";
 include "include/utility.php";
 
 
+$_SESSION["sUid"]=1;
 
-$sUid=1;
+// 取得sUid
+$sUid=$_SESSION["sUid"];
 $ALC_project_file="Metaphor_Employee_Data.ACL";
 $ALC_project_src="ACL DATA/$ALC_project_file";
 
@@ -360,6 +362,11 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 	  background-image: url("img/acl_treeview/table_img.png");
 	  background-position: 0 0;
 	}
+	span.fancytree-node.script_img > span.fancytree-icon {
+	  /*background-image: url("fancytree/demo/skin-custom/customDoc2.gif");*/
+	  background-image: url("img/acl_treeview/script.png");
+	  background-position: 0 0;
+	}
 	span.fancytree-node.table_img_active > span.fancytree-icon {	  
 	  background-image: url("img/acl_treeview/table_img_active.png");
 	  background-position: 0 0;
@@ -369,77 +376,145 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 
 	<script type="text/javascript">
 	$(document).ready(function() {
-	  	$("#tree").fancytree({
 
+		// 記錄動態的 table 節點ID
+		var dynamic_table_node_id;
+		// 記錄動態的 script 節點 ID
+		var dynamic_script_node_id;
+
+	  	$("#tree").fancytree({
+			// 設定圖片路徑
+	  		imagePath: "img/acl_treeview/",
 	  		clickFolderMode: 3, // 1:activate, 2:expand, 3:activate and expand, 4:activate (dblclick expands)
+	  		
+	  		
+	  		// 離開一個節點的時候更換 icon 
+			blur: function(event, data) {
+				var node = data.node;
+				var nodeid = node.data.nodeid;
+			},
+
 	  		click: function(event, data) {
 		    	var node = data.node;
 		    	var tablename = node.data.tablename;
 		    	var type = node.data.type;
 		    	var test = node.data.test;
 		    	
-		    	
-		    	// alert(id);
-		    	// alert(node.data.test);
 		    	// alert(node.data.dbtable);
-		    	
-		    	
 		    	// alert($(this).html());
+
+		    	
 				if (type==="table") {
-					$(this).find("."+tablename).removeClass('table_img').addClass('table_img_active');
+					// 換icon
+					// $(this).find("."+tablename).removeClass('table_img').addClass('table_img_active');
+					// alert(node.data.icon);
+					// node.data.icon="table_img_active.png";
+					// alert(node.data.icon);
+
+					// var $span = $(node.span);
+				  //       $span.find("> span.fancytree-icon").css({
+				  //           backgroundImage: "url(img/acl_treeview/table_img_active.png)",
+				  //           backgroundPosition: "0 0"
+				  //       });
 				};
-		    		// Sample: add an hierarchic branch using code.
-			      // This is how we would add tree nodes programatically
+				// 打開folder
 			    if (type==="folder") {
 					var openstatus = node.data.openstatus;
-					
-					// $(this).html().find('#useless').remove();
-					
-					 // $("#tree").fancytree("getTree").activateKey("useless");
-					 
+					var sub_chk = node.data.subchk;
 
-
-					if (openstatus==="unopen") {
-						
+					// folder 還沒被開過且該資料夾內有資料
+					if (openstatus==="unopen" & sub_chk==="has_sub") {
 						var d_id = node.data.did;
-						alert(d_id);
+						// alert(d_id);
 
 						// 切換為已開啟
 						node.data.openstatus="";
-						
 						// 取得資料夾內的內容
-						// $.ajax({ url: 'directory_ajax.php' ,
-						// 	cache: false,
-						// 	dataType: 'html',// <== 設定傳送格式
-						// 	type:'GET',// <== 設定傳值方式
-						// 	data: { action: "get_subdirectory" },// <== 傳GET的變數，此例是gsn
-						// 	error: function(xhr) { alert('Ajax request 發生錯誤'+ xhr); },
-						// 	success: function(response) {
-						// 	$('#gname').html( response );
-						// 	}
-						// });
+						$.ajax({ url: 'directory_ajax.php' ,
+							cache: false,
+							dataType: 'html',// <== 設定傳送格式
+							type:'GET',// <== 設定傳值方式
+							data: { action: "get_subdirectory" , d_id:d_id },// <== 傳GET的變數，此例是gsn
+							error: function(xhr) { alert('取得資料夾內容 Ajax request 發生錯誤'+ xhr); },
+							success: function(response) {
+								// alert(response);
+								var subdirectory_arr=$.parseJSON(response);
 
-						// 使用id 取得節點 並刪掉不需要的節點
-						$("#tree").fancytree("getTree").getNodeByKey("useless").remove();
-						var childNode = node.addChildren({
-				        	title: "Programatically addded nodes",
-				        	tooltip: "This folder and all child nodes were added programmatically.",
-				        	folder: true,
-				        	test:"123"
-					    });
-					    childNode.addChildren({
-					        title: "Document using a custom icon",
-					        icon: "customdoc1.gif"
-					    });	
+								// 取得每一個物件
+								$.each(subdirectory_arr, function(index, obj) {
+									var  obj_name = obj.name;
+									var  obj_type = obj.type;
+									var  obj_d_id = obj.d_id;
+									// 確認資料夾是否有值
+									var  obj_folder_inside_count = obj.folder_inside_count;
+
+									switch (obj_type) {  
+										// 資料夾
+									    case "folder":  
+									        // 替當下的節點下增加檔案
+											var childNode = node.addChildren({
+									        	title: obj_name,
+									        	// tooltip: "This folder and all child nodes were added programmatically.",
+									        	folder: true,
+									        	openstatus:"unopen",
+									        	type:obj_type,
+									        	did: obj_d_id,
+										    });
+										    
+										    // 該子資料夾內有還有資料
+										    if (obj_folder_inside_count>0) {
+										    	childNode.data.subchk="has_sub";
+										    	// alert("123");
+										    	childNode.addChildren({
+										        	title: "useless",
+										        	key:"useless_"+obj_d_id,
+										    	});		
+										    };
+								        break;  
+								
+										// table
+									    case "table":  
+									        // 替當下的節點下增加檔案
+											var childNode = node.addChildren({
+									        	title: obj_name,
+									        	// tooltip: "This folder and all child nodes were added programmatically.",
+									        	// icon: "table_img.png",
+									        	type:obj_type,
+									        	nodeid:"nodeid"+d_id,
+									        	key:"nodeid"+d_id,
+									        	extraClasses:'table_img',
+										    });
+								        break;  
+
+								        // table
+									    case "script":  
+									        // 替當下的節點下增加檔案
+											var childNode = node.addChildren({
+									        	title: obj_name,
+									        	type:obj_type,
+									        	nodeid:"nodeid"+d_id,
+									        	key:"nodeid"+d_id,
+									        	// tooltip: "This folder and all child nodes were added programmatically.",
+									        	// icon: "table_img.png",
+									        	extraClasses:'script_img',
+										    });
+								        break;  
+									    
+									    default:  
+									        
+								        break;  
+									};  
+
+
+								});
+								// 使用d_id 取得節點 並刪掉不需要的節點
+								$("#tree").fancytree("getTree").getNodeByKey("useless_"+d_id).remove();
+							}
+						});
 					};
-					
-			            	
 			    };
-			      
-
-
-			        
 		    },
+		    // 連點
 			dblclick: function(event, data) {
 				// 當下這個節點
 				var node = data.node;
@@ -448,10 +523,70 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 				// 該table的資料表
 				var dbtable = node.data.dbtable;
 				var type = node.data.type;
+				// 動態的表
+				var nodeid = node.data.nodeid;
+
 				if (type==="table") {
 					// 開啟動態table
-					$('#file_content', window.parent.document).get(0).contentWindow.set_dynamic_table(tablename , dbtable);	
+			        $('#file_content', window.parent.document).get(0).contentWindow.set_dynamic_table(tablename , dbtable);	
+			        // 把現在的table icon 換成開啟
+					var $span = $(node.span);
+			        $span.find("> span.fancytree-icon").css({
+			            backgroundImage: "url(img/acl_treeview/table_img_active.png)",
+			            backgroundPosition: "0 0"
+			        });
+			        // dynamic table有被開啟了
+			        if (dynamic_table_node_id!==nodeid) {
+						// 先確認dynamic_table_node_id不是 undefined
+						if (dynamic_table_node_id !== undefined) {
+							// 取得dynamic_table_node_id 的 id
+							onblur_node = $("#tree").fancytree("getTree").getNodeByKey(dynamic_table_node_id);
+							onblur_node_type =onblur_node.data.type;
+							// alert(onblur_node.data.type);		
+							// 相同type
+							if (onblur_node_type===type) {
+								// 把之前的 dynamic  table 改為為開啟
+								var $span = $(onblur_node.span);
+						        $span.find("> span.fancytree-icon").css({
+						            backgroundImage: "url(img/acl_treeview/table_img.png)",
+						            backgroundPosition: "0 0"
+						        });
+							};
+						};
+						dynamic_table_node_id=nodeid;
+			        };
 				};
+
+				if (type==="script") {
+					// 把現在的script icon 換成開啟
+					var $span = $(node.span);
+			        $span.find("> span.fancytree-icon").css({
+			            backgroundImage: "url(img/acl_treeview/script_active.png)",
+			            backgroundPosition: "0 0"
+			        });
+
+			        // dynamic script 有被開啟了
+			        if (dynamic_script_node_id!==nodeid) {
+						// 先確認dynamic_script_node_id不是 undefined
+						if (dynamic_script_node_id !== undefined) {
+							// 取得dynamic_script_node_id 的 id
+							onblur_node = $("#tree").fancytree("getTree").getNodeByKey(dynamic_script_node_id);
+							onblur_node_type =onblur_node.data.type;
+							// alert(onblur_node.data.type);		
+							// 相同type
+							if (onblur_node_type===type) {
+								// 把之前的 dynamic  table 改為為開啟
+								var $span = $(onblur_node.span);
+						        $span.find("> span.fancytree-icon").css({
+						            backgroundImage: "url(img/acl_treeview/script.png)",
+						            backgroundPosition: "0 0"
+						        });
+							};
+						};
+						dynamic_script_node_id=nodeid;
+			        };
+				};
+
 			},
 	  	});
 	  	
@@ -474,13 +609,20 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 
 		        			if ($directory_data["type"]=="folder" ) {
 		        				$folder_data="";
+		        				$sub_chk="";
 		        				if ($folder_chk>0) {
-		        					$folder_data='<ul><li id="useless">useless</li></ul>';
+		        					$folder_data='<ul><li id="useless_'.$d_id.'">useless</li></ul>';
+		        					$sub_chk="has_sub";
 		        				}
 		        				// 多useless 為了讓資料夾看起來可以展開
-		        				echo '<li class="folder" data-type="folder" data-openstatus="unopen" data-did="'.$d_id.'" >'.$name.$folder_data.'</li>';
+		        				// echo '<li class="folder" data-type="folder" data-openstatus="unopen" data-did="'.$d_id.'" data-subchk="'.$sub_chk.'" >'.$name.$folder_data.'</li>';
+		        				?>
+		        				<li class="folder"  data-json='{"type": "folder" ,"openstatus": "unopen", "did":"<?echo $d_id;?>", "subchk": "<?echo $sub_chk;?>" }'  ><?echo $name.$folder_data;?></li>
+								<?
+
 		        			}elseif($directory_data["type"]=="table" ){
-								echo '<li class="table_img '.$name.'" data-dbtable="'.$table_db_name.'" data-tablename="'.$name.'" data-type="table"><span class="folder">'.$name.'</span></li>';
+								// echo '<li class="table_img '.$name.'" data-dbtable="'.$table_db_name.'"  data-tablename="'.$name.'" data-type="table"><span class="folder">'.$name.'</span></li>';
+								echo '<li class="table_img '.$name.'"  data-dbtable="'.$table_db_name.'"  data-tablename="'.$name.'" data-type="table" data-nodeid="node_'.$d_id.'"  id="node_'.$d_id.'" ><span class="folder" >'.$name.'</span></li>';
 		        			}
 						}
 		        	}

@@ -29,9 +29,9 @@ if(isset($table_name)){
 // 使用 information_schema.columns 資料表找出某一資料庫的某一資料表的欄位資訊
 $sql_colname = "SELECT * FROM  information_schema.columns where TABLE_SCHEMA='acl_online' and TABLE_NAME='$table_name' order by ORDINAL_POSITION";
 
-				mysql_query("SET NAMES 'utf8'");
-				$colname_exe = mysql_query($sql_colname);	// $colname_exe	取出的資料
-				$colname_rs=mysql_num_rows($colname_exe);	// $colname_rs 有幾筆資料
+mysql_query("SET NAMES 'utf8'");
+$colname_exe = mysql_query($sql_colname);	// $colname_exe	取出的資料
+$colname_rs=mysql_num_rows($colname_exe);	// $colname_rs 有幾筆資料
 				
 
 // <table style="font-size:像素或點數;color:顏色代碼;background-color:顏色代碼">
