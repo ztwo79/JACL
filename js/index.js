@@ -23,3 +23,7 @@ $(document).on('click', '#extract_sumit_btn', function(event) {
 		}
 	});
 });
+function error_show (argument) {
+	alert("123123");
+	$("#errorModal").modal();
+}

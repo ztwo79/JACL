@@ -10,6 +10,11 @@
     <link href="lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/submenu.css" rel="stylesheet">
     <link href="css/index.css" rel="stylesheet">
+    
+    <!-- easyui -->
+    <link rel="stylesheet" type="text/css" href="lib/jquery-easyui-1.3.6/themes/default/easyui.css">
+    <link rel="stylesheet" type="text/css" href="lib/jquery-easyui-1.3.6/themes/icon.css">
+    <link rel="stylesheet" type="text/css" href="lib/jquery-easyui-1.3.6/demo.css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -19,8 +24,14 @@
     <![endif]-->
   </head>
   <body>
+    
+
+    <script type="text/javascript" src="lib/jquery-easyui-1.3.6/jquery.min.js"></script>
+    <script type="text/javascript" src="lib/jquery-easyui-1.3.6/jquery.easyui.min.js"></script>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="js/jquery-1.11.0.min.js"></script>
+
+    
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="lib/bootstrap/js/bootstrap.min.js"></script>
     <script src="js/index.js"></script>
@@ -32,6 +43,25 @@
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
             <h4 class="modal-title" id="myModalLabel">Extract</h4>
+          </div>
+          <div class="modal-body">
+                <span>to: </span> <input id="extract_input" type="text" value="">
+          </div>
+          <div class="modal-footer">
+            <button id="extract_sumit_btn" type="button" class="btn btn-primary">確定</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- error Modal -->
+    <div class="modal fade modal-dialog-center" id="errorModal"  tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel">Error</h4>
           </div>
           <div class="modal-body">
                 <span>to: </span> <input id="extract_input" type="text" value="">
@@ -231,10 +261,33 @@
             </div><!-- /.container-fluid -->
             </nav>       
         </div><!-- row -->
+
+        
+
+
         <div class="row">
-            <div class="col-md-3 show_td" ><iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe></div>
+            <div class="easyui-layout" style="height:800px;">                
+                <div data-options="region:'west',split:true" title="Project Navigator" style="width:325px;">
+                    <div class="easyui-tabs" style="width:300px;height:760px;" data-options="tabPosition:'bottom',fit:true" >     
+                        <div title="Overview" style="padding:10px;">     
+                            <iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe> 
+                        </div>    
+                        <div title="Log" style="padding:10px;">   
+                            <iframe name="ifm-left-log" id="ifm_left_log" src="log_show.php" width="100%" height="680" frameborder="0"></iframe>   
+                            <input type="button" name="Button" value="reload" onclick="javascript:refreshFrame();"> 
+                        </div>    
+                        <div title="Variables" style="padding:10px;">    
+                        </div>    
+                    </div>    
+                </div>
+
+
+                <div data-options="region:'center',title:'Show_Table',iconCls:'icon-ok'"><iframe name="ifm-right" id="file_content"  src="tab.php" width="100%" height="700" frameborder="0"></iframe></div>
+                </div>
+            </div>      
+            <!-- <div class="col-md-3 show_td" ><iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe></div> -->
             <!-- <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="jqgrid.php" width="100%" height="700" frameborder="0"></iframe></div>   -->
-            <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="tab.php" width="100%" height="700" frameborder="0"></iframe></div>  
+            <!-- <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="tab.php" width="100%" height="700" frameborder="0"></iframe></div>   -->
         </div>      
     </div><!-- main container -->
  

@@ -12,6 +12,7 @@ $Update_SQL_arr = array(
 																				  content_table varchar(200)  NULL,																				  
 																				  ACL_file varchar(200)  NULL,																				  
 																				  type varchar(20)  NULL,
+																				  file_order BIGINT NULL,
 																				  UNIQUE(d_id)
 																				)"),
 

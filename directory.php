@@ -4,13 +4,158 @@ session_start();
 include "include/config.php";
 include "include/utility.php";
 
-
-$_SESSION["sUid"]=1;
+// 使用者編號
+$_SESSION["sUid"]=2;
 
 // 取得sUid
 $sUid=$_SESSION["sUid"];
-$ALC_project_file="Metaphor_Employee_Data.ACL";
+// $ALC_project_file="Metaphor_Employee_Data.ACL";
+$ALC_project_file="ACL_Demo.ACL";
+
 $ALC_project_src="ACL DATA/$ALC_project_file";
+
+/**
+* 專案發生錯誤   把資料回朔
+*/
+class project_handler {
+	function __construct($db_conn, $sUid , $project_file) {
+		$this->db_conn = $db_conn;
+		$this->sUid = $sUid;
+		$this->project_file = $project_file;
+	}
+	// 刪除專案內容
+	public function destroy_project() {
+		// 取得 root id
+		$this->get_root_id();
+		// 刪除資料夾內資料表
+		$this->del_folder_table();
+		// 刪除資料夾
+		$this->del_folder();
+		// 刪除根目錄
+		$this->destroy_root_folder();
+		
+	}
+	// 刪除 根目錄資料夾
+	public function destroy_root_folder() {
+		$del_sql = "DELETE FROM directory_structure where sUid='$this->sUid' and root_id='0' and ACL_file='$this->project_file'";
+		$stmt = $this->db_conn->exec($del_sql);
+		try {
+			if ($stmt===false) {
+				throw new PDOException('刪除專案目錄資料夾錯誤');
+			}
+		} catch (PDOException $e) {
+			$error = $this->db_conn->errorInfo();
+			echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+			echo "錯誤行數: " . $e->getline()."<br>";
+			// echo "錯誤內容: " . $error[2];
+			die();
+		}
+	}
+	public function del_folder() {
+		$del_sql = "DELETE FROM directory_structure where sUid='$this->sUid' and root_id='$this->root_id' and type='folder'";
+		$stmt = $this->db_conn->exec($del_sql);
+		try {
+			if ($stmt===false) {
+				throw new PDOException('刪除目錄資料夾錯誤');
+			}
+		} catch (PDOException $e) {
+			$error = $this->db_conn->errorInfo();
+			echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+			echo "錯誤行數: " . $e->getline()."<br>";
+			// echo "錯誤內容: " . $error[2];
+			die();
+		}
+	}
+
+	// 刪除資料夾內資料表
+	public function del_folder_table() {
+		// 取得資料表 然後drop 掉
+		try {
+			$sql = "SELECT * from directory_structure where sUid='$this->sUid' and root_id='$this->root_id' and type='table'";
+			$stmt = $this->db_conn->prepare($sql);
+			$exe = $stmt->execute();
+			if ($exe===false) {
+				throw new PDOException('取得要刪除的資料表錯誤');
+			}
+		} catch (PDOException $e) {
+			$error = $this->db_conn->errorInfo();
+			echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+			echo "錯誤行數: " . $e->getline()."<br>";
+			// echo "錯誤內容: " . $error[2];
+			die();
+		}
+		while($row = $stmt->fetch()) {
+
+			$d_id = $row["d_id"];
+			$content_table = $row["content_table"];
+			// 刪除資料表
+			$del_sql = "DROP TABLE IF EXISTS $content_table";
+			$drop_table_stmt = $this->db_conn->exec($del_sql);
+			try {
+				if ($drop_table_stmt===false) {
+					throw new PDOException('刪除資料表錯誤');
+				}
+			} catch (PDOException $e) {
+				$error = $this->db_conn->errorInfo();
+				echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+				echo "錯誤行數: " . $e->getline()."<br>";
+				// echo "錯誤內容: " . $error[2];
+				die();
+			}
+			// 確認該資料表已經被刪除了
+			try {
+				$sql = "SELECT COUNT(TABLE_NAME) FROM information_schema.tables WHERE table_schema = '$content_table'";
+				$drop_table_chk_stmt = $this->db_conn->prepare($sql);
+				$exe = $drop_table_chk_stmt->execute();
+				if ($exe===false) {
+					throw new PDOException('取得專案目錄資料夾出現錯誤');
+				}
+			} catch (PDOException $e) {
+				$error = $this->db_conn->errorInfo();
+				echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+				echo "錯誤行數: " . $e->getline()."<br>";
+				// echo "錯誤內容: " . $error[2];
+				die();
+			}
+			$drop_chk  = $drop_table_chk_stmt->fetchColumn();
+			// 已刪除該資料表 可以刪除檔案紀錄
+			if ($drop_chk==="0") {
+				$del_sql = "DELETE FROM directory_structure where d_id='$d_id'";
+				$delete_table_stmt = $this->db_conn->exec($del_sql);
+				try {
+					if ($delete_table_stmt===false) {
+						throw new PDOException('刪除專案目錄資料表錯誤');
+					}
+				} catch (PDOException $e) {
+					$error = $this->db_conn->errorInfo();
+					echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+					echo "錯誤行數: " . $e->getline()."<br>";
+					// echo "錯誤內容: " . $error[2];
+					die();
+				}
+			}
+		}
+	}
+
+	// 取得 root id
+	public function get_root_id() {
+		try {
+			$sql = "SELECT * from directory_structure where sUid='$this->sUid' and parent_id='0' and type='root_folder' and ACL_file='$this->project_file'";
+			$stmt = $this->db_conn->prepare($sql);
+			$exe = $stmt->execute();
+			if ($exe===false) {
+				throw new PDOException('取得root id 出現錯誤');
+			}
+		} catch (PDOException $e) {
+			$error = $this->db_conn->errorInfo();
+			echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+			echo "錯誤行數: " . $e->getline()."<br>";
+			// echo "錯誤內容: " . $error[2];
+			die();
+		}
+		$this->root_id  = $stmt->fetchColumn();
+	}
+}
 
 
 
@@ -33,59 +178,17 @@ try {
 	die();
 }
 
-$root_folder->name="Metaphor_Employee_Data.ACL";
-
-// 有建立過此專案
-if (!empty($root_folder_id)) {
-	// 取得第一層的資料
-	try {
-		$sql = "SELECT * from directory_structure where sUid='$sUid' and parent_id='$root_folder_id'";
-		$stmt = $db_conn->prepare($sql);
-		$exe = $stmt->execute();
-		if ($exe===false) {
-			throw new PDOException('取得專案目錄第一層資料夾出現錯誤');
-		}
-	} catch (PDOException $e) {
-		$error = $db_conn->errorInfo();
-		echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
-		echo "錯誤行數: " . $e->getline()."<br>";
-		// echo "錯誤內容: " . $error[2];
-		die();
-	}
-	while($row = $stmt->fetch()) {
-		$d_id = $row["d_id"];
-		$name = $row["name"];
-		$content_table = $row["content_table"];
-		$type = $row["type"];
-		$directory_arr[$d_id]["name"]=$name;
-		$directory_arr[$d_id]["content_table"]=$content_table;
-		$directory_arr[$d_id]["type"]=$type;
-		// 資料夾需確認資料夾內有無資料
-		if ($type==="folder") {
-			try {
-				$sql = "SELECT COUNT(*) as folder_chk from directory_structure where sUid='$sUid' and parent_id='$d_id'";
-				$folder_chk_stmt = $db_conn->prepare($sql);
-				$exe = $folder_chk_stmt->execute();
-				if ($exe===false) {
-					throw new PDOException('取得專案目錄資料夾出現錯誤');
-				}
-			} catch (PDOException $e) {
-				$error = $db_conn->errorInfo();
-				echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
-				echo "錯誤行數: " . $e->getline()."<br>";
-				// echo "錯誤內容: " . $error[2];
-				die();
-			}
-			$folder_chk  = $folder_chk_stmt->fetchColumn();
-			$directory_arr[$d_id]["folder_chk"]=$folder_chk;
-		}
-	}
-}
-
+// 清除整個專案
+// $project_handler = new project_handler($db_conn , $sUid , $ALC_project_file);
+// $project_handler->destroy_project();
+// die();
 
 // 使用者還沒有該專案 建立該專案
 if (empty($root_folder_id)) {
 
+	$project_handler = new project_handler($db_conn , $sUid , $ALC_project_file);
+	// $project_handler->destroy_project();
+	
 	// 讀取專案檔
 	$ALC_project_file_fp=fopen($ALC_project_src , "r");
 	$all_size=filesize($ALC_project_src);
@@ -93,15 +196,16 @@ if (empty($root_folder_id)) {
 	$all=mb_convert_encoding($all, 'UTF-8', 'UTF-16LE');
 
 
-
 	// 把專案檔輸入進資料庫
 	$insert_arr = array(
 		"sUid"          => $sUid,
+		"name"      => $ALC_project_file,				
 		"root_id"      => 0,				
 		"parent_id"      => 0,				
 		"type"      => "root_folder",		
 		"ACL_file"      => $ALC_project_file
-	);			
+	);		
+
 	try {
 		$insert_sql  = "INSERT INTO directory_structure";
 		$insert_sql .= " (".implode(",", array_keys($insert_arr)).")";
@@ -116,6 +220,7 @@ if (empty($root_folder_id)) {
 		echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
 		echo "錯誤行數: " . $e->getline()."<br>";
 		// echo "錯誤內容: " . $error[2];
+		$project_handler->destroy_project();
 		die();
 	}
 
@@ -123,7 +228,9 @@ if (empty($root_folder_id)) {
 
 	if (!empty($data_arr)) {
 		foreach ($data_arr as $line => $each_line) {
-			// 取得資料表名稱
+			
+
+			// 取得資料表結構
 			$table_chk = strpos($each_line,"^LAYOUT");				
 			if ($table_chk!==false) {			
 				// echo $line. "   ". $each_line."<br>";
@@ -154,8 +261,6 @@ if (empty($root_folder_id)) {
 				$col_index = next($table_detail_arr);
 				$col_length = next($table_detail_arr);
 				$detail_index = $col_index+$col_length-1;
-
-
 				$table_description[$table_name]["col_name"][]=$col_name;
 				$table_description[$table_name]["col_start"][]=$col_index;
 				$table_description[$table_name]["col_length"][]=$col_length;
@@ -175,6 +280,11 @@ if (empty($root_folder_id)) {
 						$sql_type="double";
 						$decimal_dot = next($table_detail_arr);
 					break;
+
+					case 'ASCII':
+						$sql_type="varchar($col_length)";
+					break;
+
 					// VARCHAR
 					default:
 						$sql_type="varchar($col_length)";
@@ -186,12 +296,44 @@ if (empty($root_folder_id)) {
 				// 存入資料庫的資料型態
 				$table_col_arr[]="`$col_name` $sql_type".' NULL';
 				// 取得最後一個col 
-				if ($detail_index==$table_length ) {				
+				if ($detail_index==$table_length ) {
+
+					// 輸入資料表 進入目錄
+					$insert_arr = array(
+						"sUid"          => $sUid,
+						"root_id"      => $root_folder_id,
+						"parent_id"      => $root_folder_id,
+						"name"       => $table_name,
+						"content_table" => $table_db_name,
+						"type"       => "table",
+						"ACL_file"       => "$table_file_name"
+					);			
+					$insert_sql  = "INSERT INTO directory_structure";
+					$insert_sql .= " (".implode(",", array_keys($insert_arr)).")";
+					$insert_sql .= " VALUES ('".implode("', '", $insert_arr)."') ";
+ 					$stmt = $db_conn->exec($insert_sql);
+ 					// 儲存資料表的d_id
+					$table_description[$table_name]["d_id"] = $db_conn->lastInsertId();
+ 					
+					try {
+						if ($stmt===false) {
+							throw new PDOException('新增目錄資料表錯誤');
+						}
+					} catch (PDOException $e) {
+						$error = $db_conn->errorInfo();
+						echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+						echo "錯誤行數: " . $e->getline()."<br>";
+						// echo "錯誤內容: " . $error[2];
+						$project_handler->destroy_project();
+						die();
+					}
+
+					
+
 					$get_table_detail_chk=false;				
 					if (!empty($table_col_arr)) {
 						$table_col_sql=implode(",", $table_col_arr);					
 					}
-					
 					// create table sql
 					$create_table_sql="CREATE TABLE $table_db_name (";
 					$create_table_sql.=$table_col_sql;				
@@ -203,17 +345,81 @@ if (empty($root_folder_id)) {
 					} catch (PDOException $e) {						
 						echo "新增資料表時出現錯誤   錯誤如下 <br>" . $e->getMessage();
 						echo "錯誤行數: " . $e->getline()."<br>";
+						$project_handler->destroy_project();
 						die();
-					}			
-								
+					}
+				}
+
+			}
+			
+
+
+
+
+
+
+			// 取得資料夾結構
+			$folder_structure_chk = strpos($each_line,"^FOLDER");
+			if ($folder_structure_chk !==false) {
+ 				$folder_name_arr=explode(" ", $each_line);
+				// 清除空白
+				$folder_name_arr = array_diff($folder_name_arr, array(null,'null','',' '));
+				$folder_name_arr = array_values($folder_name_arr);
+				$folder_name =  next($folder_name_arr);		
+				$folder_id =  next($folder_name_arr);		
+				// 取得 parent id 資料行
+				$parent_id_line = $data_arr[$line+1];
+				$parent_id_arr=explode(" ", $parent_id_line);
+				// 清除空白
+				$parent_id_arr = array_diff($parent_id_arr, array(null,'null','',' '));
+				$parent_id_arr = array_values($parent_id_arr);
+				$folder_parent_id =  next($parent_id_arr);
+				
+				// 建立資料夾結構
+				$folder_db_folder_id = $ACL_folder_data["db_folder_id"];
+				
+				// parent_id = 0 代表parent folder 為根目錄
+				if ($folder_parent_id==="0") {
+					$folder_parent_id=$root_folder_id;
+				}else{
+					$folder_parent_id = $folder_db_mapping_arr[$folder_parent_id];
+				}
+
+				
+				
+				// 把資料夾結構輸入進入資料庫
+				$insert_arr = array(
+					"sUid"          => $sUid,
+					"root_id"      => $root_folder_id,
+					"parent_id"      => $folder_parent_id,
+					"name"       => $folder_name,
+					"type"       => "folder"
+				);			
+				$insert_sql  = "INSERT INTO directory_structure";
+				$insert_sql .= " (".implode(",", array_keys($insert_arr)).")";
+				$insert_sql .= " VALUES ('".implode("', '", $insert_arr)."') ";
+				
+				$stmt = $db_conn->exec($insert_sql);
+				// 資料夾對應的資料庫的id
+				$folder_db_mapping_arr[$folder_id] = $db_conn->lastInsertId();
+
+				try {
+					if ($stmt===false) {
+						throw new PDOException('新增專案目錄資料夾錯誤');
+					}
+				} catch (PDOException $e) {
+					$error = $db_conn->errorInfo();
+					echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+					echo "錯誤行數: " . $e->getline()."<br>";
+					$project_handler->destroy_project();
+					// echo "錯誤內容: " . $error[2];
 				}
 			}
-
-
 					
 			// 取得需要輸入資料表的內容
 			$table_file_chk = strpos($each_line,"^FORMAT");				
-			if ($table_file_chk!==false) {						
+			if ($table_file_chk!==false) {
+				// 取得資料表的資料
 				$table_file_arr=explode(" ", $each_line);
 				$table_file_arr = array_diff($table_file_arr, array(null,'null','',' '));
 				$table_file_arr=array_values($table_file_arr);
@@ -228,43 +434,50 @@ if (empty($root_folder_id)) {
 				$col_start_arr =  $table_description[$insert_table]["col_start"];
 				$col_type_arr =  $table_description[$insert_table]["col_type"];
 				$col_decimal_dot_arr =  $table_description[$insert_table]["decimal_dot"];
+				$table_d_id =  $table_description[$insert_table]["d_id"];
 				$arr_count = count($col_start_arr)-1;
 
-									
-				// 輸入資料夾進入資料庫
-				$insert_arr = array(
-					"sUid"          => $sUid,
-					"root_id"      => $root_folder_id,
-					"parent_id"      => $root_folder_id,
-					"name"       => $insert_table,
-					"content_table" => $table_db_name,
-					"type"       => "table",
-					"ACL_file"       => "$table_file_name"
-				);			
-				$insert_sql  = "INSERT INTO directory_structure";
-				$insert_sql .= " (".implode(",", array_keys($insert_arr)).")";
-				$insert_sql .= " VALUES ('".implode("', '", $insert_arr)."') ";
-				$stmt = $db_conn->exec($insert_sql);
+
+				// 取得該資料表的資料夾位置
+				// 取得 parent id 資料行
+				$parent_id_line = $data_arr[$line+1];
+				$parent_id_arr=explode(" ", $parent_id_line);
+				// 清除空白
+				$parent_id_arr = array_diff($parent_id_arr, array(null,'null','',' '));
+				$parent_id_arr = array_values($parent_id_arr);
+				$table_parent_id =  next($parent_id_arr);
+				// 取得該parent_id  在db的id
+				$table_db_parent_id=$folder_db_mapping_arr[$table_parent_id];
+
+				$update_sql = "UPDATE directory_structure set parent_id='$table_db_parent_id' where d_id='$table_d_id'";
+				$stmt = $db_conn->exec($update_sql);
 				try {
 					if ($stmt===false) {
-						throw new PDOException('新增專案目錄資料夾錯誤');
+						throw new PDOException('更新資料表位置錯誤');
 					}
 				} catch (PDOException $e) {
 					$error = $db_conn->errorInfo();
 					echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
 					echo "錯誤行數: " . $e->getline()."<br>";
 					// echo "錯誤內容: " . $error[2];
+					$project_handler->destroy_project();
 					die();
 				}
-				$d_id = $db_conn->lastInsertId(); 
-				// 放入第一層的資料 展示
-				$directory_arr[$d_id]["name"]=$insert_table;
-				$directory_arr[$d_id]["content_table"]=$table_db_name;
-				$directory_arr[$d_id]["type"]="table";
-				
 		
-				// open table file
+				// 讀取資料表內容 輸入進資料庫
 				$insert_table_file_src="ACL DATA/table_file/$table_file_name";
+				try {
+					if (!file_exists($insert_table_file_src)) {
+						throw new PDOException("$table_file_name:該資料檔不存在");
+					}	
+				} catch (Exception $e) {
+					echo $e->getMessage()."<br>";
+					echo "錯誤行數: " . $e->getline()."<br>";
+					// echo "錯誤內容: " . $error[2];
+					$project_handler->destroy_project();
+					die();
+				}
+				
 				$insert_table_file = fopen($insert_table_file_src, "rb");
 				$insert_table_file_size = filesize($insert_table_file_src);
 
@@ -300,9 +513,9 @@ if (empty($root_folder_id)) {
 
 	 						$insert_table_arr[]=trim($line_data);
 	 					}
-	 					// insert table sql
+	 					// 輸入資料進table
 	 					$insert_sql  = "INSERT INTO $table_db_name";
-	 					$insert_sql .= " (".implode(",", ($col_name_arr)).")";
+	 					$insert_sql .= " (`".implode("`, `", ($col_name_arr))."`)";
 	 					$insert_sql .= " VALUES ('".implode("', '", $insert_table_arr)."') ";
 	 					try {
 							$db_conn->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
@@ -310,14 +523,111 @@ if (empty($root_folder_id)) {
 						} catch (PDOException $e) {						
 							echo "輸入資料時出現錯誤   錯誤如下 <br>" . $e->getMessage();
 							echo "錯誤行數: " . $e->getline()."<br>";
+							$project_handler->destroy_project();
 							die();
 						}		
 	 				}
 				}
 			}
+
+
+			// 取得script 並新增至 資料庫
+			$script_chk = strpos($each_line,"^BATCH");
+			if ($script_chk!==false) {
+				$script_name_arr=explode(" ", $each_line);
+				// 清除空白
+				$script_name_arr = array_diff($script_name_arr, array(null,'null','',' '));
+				$script_name_arr = array_values($script_name_arr);
+				$script_name =  next($script_name_arr);
+				// 取得 parent id 資料行
+				$parent_id_line = $data_arr[$line+1];
+				$parent_id_arr=explode(" ", $parent_id_line);
+				// 清除空白
+				$parent_id_arr = array_diff($parent_id_arr, array(null,'null','',' '));
+				$parent_id_arr = array_values($parent_id_arr);
+				$folder_parent_id =  next($parent_id_arr);
+				$folder_parent_id = $folder_db_mapping_arr[$folder_parent_id];
+
+				// 把script 輸入進入資料庫
+				$insert_arr = array(
+					"sUid"          => $sUid,
+					"root_id"      => $root_folder_id,
+					"parent_id"      => $folder_parent_id,
+					"name"       => $script_name,
+					"type"       => "script"
+				);			
+				$insert_sql  = "INSERT INTO directory_structure";
+				$insert_sql .= " (".implode(",", array_keys($insert_arr)).")";
+				$insert_sql .= " VALUES ('".implode("', '", $insert_arr)."') ";
+				
+				$stmt = $db_conn->exec($insert_sql);
+				try {
+					if ($stmt===false) {
+						throw new PDOException('新增專案目錄資料夾錯誤');
+					}
+				} catch (PDOException $e) {
+					$error = $db_conn->errorInfo();
+					echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+					echo "錯誤行數: " . $e->getline()."<br>";
+					// echo "錯誤內容: " . $error[2];
+					$project_handler->destroy_project();
+				}
+			}
+
+
 		}//foreach ($data_arr as $line => $each_line) {
 	}//if (!empty($data_arr)) {
 
+}
+
+
+// 已建立此專案
+if (!empty($root_folder_id)) {
+	// 取得第一層的資料
+	try {
+		$sql = "SELECT * from directory_structure where sUid='$sUid' and parent_id='$root_folder_id'";
+		$stmt = $db_conn->prepare($sql);
+		$exe = $stmt->execute();
+		if ($exe===false) {
+			throw new PDOException('取得專案目錄第一層資料夾出現錯誤');
+		}
+	} catch (PDOException $e) {
+		$error = $db_conn->errorInfo();
+		echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+		echo "錯誤行數: " . $e->getline()."<br>";
+		// echo "錯誤內容: " . $error[2];
+		$project_handler->destroy_project();
+		die();
+	}
+	while($row = $stmt->fetch()) {
+		$d_id = $row["d_id"];
+		$name = $row["name"];
+		$content_table = $row["content_table"];
+		$type = $row["type"];
+		$directory_arr[$d_id]["name"]=$name;
+		$directory_arr[$d_id]["content_table"]=$content_table;
+		$directory_arr[$d_id]["type"]=$type;
+		// 資料夾需確認資料夾內有無資料
+		if ($type==="folder") {
+			try {
+				$sql = "SELECT COUNT(*) as folder_chk from directory_structure where sUid='$sUid' and parent_id='$d_id'";
+				$folder_chk_stmt = $db_conn->prepare($sql);
+				$exe = $folder_chk_stmt->execute();
+				if ($exe===false) {
+					throw new PDOException('取得專案目錄資料夾出現錯誤');
+				}
+			} catch (PDOException $e) {
+				$error = $db_conn->errorInfo();
+				echo "資料庫存取錯誤: " . $e->getMessage()."<br>";
+				echo "錯誤行數: " . $e->getline()."<br>";
+				// echo "錯誤內容: " . $error[2];
+				$project_handler->destroy_project();
+				die();
+			}
+			$folder_chk  = $folder_chk_stmt->fetchColumn();
+			$directory_arr[$d_id]["folder_chk"]=$folder_chk;
+		}
+	}
 }
 
 
@@ -341,9 +651,6 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 	<!-- custom.css -->
 	<!-- <link href="lib/fancytree/demo/skin-custom/custom.css" rel="stylesheet" type="text/css" > -->
 	<link href="css/directory.css" rel="stylesheet" type="text/css" >
-	
-
-
 	<script src="js/jquery-1.11.0.min.js"></script>
   	<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js" type="text/javascript"></script>
 	<!-- facyytree  -->
@@ -445,6 +752,7 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 									var  obj_name = obj.name;
 									var  obj_type = obj.type;
 									var  obj_d_id = obj.d_id;
+									var  obj_dbtable = obj.dbtable;
 									// 確認資料夾是否有值
 									var  obj_folder_inside_count = obj.folder_inside_count;
 
@@ -480,11 +788,13 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 									        	// tooltip: "This folder and all child nodes were added programmatically.",
 									        	// icon: "table_img.png",
 									        	type:obj_type,
-									        	nodeid:"nodeid"+d_id,
-									        	key:"nodeid"+d_id,
+									        	nodeid:"nodeid"+obj_d_id,
+									        	key:"nodeid"+obj_d_id,
 									        	extraClasses:'table_img',
+									        	dbtable : obj_dbtable,
+									        	tablename : obj_name,
 										    });
-								        break;  
+								        break;
 
 								        // table
 									    case "script":  
@@ -492,8 +802,8 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 											var childNode = node.addChildren({
 									        	title: obj_name,
 									        	type:obj_type,
-									        	nodeid:"nodeid"+d_id,
-									        	key:"nodeid"+d_id,
+									        	nodeid:"nodeid"+obj_d_id,
+									        	key:"nodeid"+obj_d_id,
 									        	// tooltip: "This folder and all child nodes were added programmatically.",
 									        	// icon: "table_img.png",
 									        	extraClasses:'script_img',

@@ -30,8 +30,7 @@ $sUid = $_SESSION["sUid"];
 if ($action=="get_subdirectory") {
 
 	try {
-
-		$sql = "SELECT * from directory_structure where sUid='$sUid' and parent_id='$d_id' ";
+		$sql = "SELECT * from directory_structure where sUid='$sUid' and parent_id='$d_id' ORDER BY FIELD(type,'table','script','folder'),d_id";
 		$stmt = $db_conn->prepare($sql);
 		$exe = $stmt->execute();
 		if ($exe===false) {
@@ -49,6 +48,7 @@ if ($action=="get_subdirectory") {
 		$d_id = $row["d_id"];
 		$type = $row["type"];
 		$name = $row["name"];
+		$content_table = $row["content_table"];
 		
 		$$name ->name = $name;
 		$$name ->type = $type;
@@ -72,6 +72,9 @@ if ($action=="get_subdirectory") {
 			}
 			$folder_inside_count  = $folder_inside_stmt->fetchColumn();
 			$$name ->folder_inside_count = $folder_inside_count;
+		}
+		if ($type == "table") {
+			$$name ->dbtable = $content_table;
 		}
 
 

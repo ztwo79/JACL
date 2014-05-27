@@ -74,7 +74,13 @@ if ($_POST) {
 			            // col data type
 			            var colModel_arr = table_info_obj.colModel_arr;
 			            
-			            // 
+			            
+			            // 複製 array
+			            var col_list_arr = colNames_arr.slice();
+			            // 去除 key_id
+			            col_list_arr.splice(0 , 1);
+			            $("#col_list").val(col_list_arr.join(","));
+			            
 			            colNames_arr[0]="id";
 
 			            // 格式範例
@@ -137,7 +143,8 @@ if ($_POST) {
 </head>
 <body>
 	<input type="hidden" value="<?echo $table_name;?>" id="table_name">
-	<input type="hidden" value="<?echo $db_table_name;?>" id="db_table_name">
+	<input type="hidde" value="<?echo $db_table_name;?>" id="db_table_name">
+	<input type="hidde" value="<?echo $col_list;?>" id="col_list">
 	<table id="table_list"></table>
 	<div id="pager"></div>
 </body>
