@@ -23,7 +23,38 @@ $(document).on('click', '#extract_sumit_btn', function(event) {
 		}
 	});
 });
-function error_show (argument) {
-	alert("123123");
+function error_show (error_message , error_detail) {
+	// alert("123123");
+	// 放入錯誤訊息
+	$("#error_header").html(error_message);
+	$("#error_detail").html(error_detail);
+	// 顯現 error box
 	$("#errorModal").modal();
 }
+
+$(document).ready(function(){ 
+	// 目錄檔load 之後 
+	$("#directory_iframe").on('load', function(event) {
+		// 點選iframe 的內容 取消上面有被點開的tab
+		// 左邊的瀏覽列
+		$('#directory_iframe').contents().on('click', function(event) {
+			$(".nav .open").removeClass("open");
+		});
+
+	});	
+
+	// 右邊的視窗
+	$("#file_content").on('load', function(event) {
+		// 點選iframe 的內容 取消上面有被點開的tab
+		// 左邊的瀏覽列
+		$('#file_content').contents().on('click', function(event) {
+			$(".nav .open").removeClass("open");
+		});
+	});	
+	
+		
+
+});
+
+
+

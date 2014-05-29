@@ -1,11 +1,9 @@
-<meta charset="utf-8"/>
 <?php
 session_start();
 include "include/config.php";
 include "include/utility.php";
 
-// 使用者編號
-$_SESSION["sUid"]=2;
+
 
 // 取得sUid
 $sUid=$_SESSION["sUid"];
@@ -664,9 +662,15 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 	  /*color: maroon;*/
 	  /*font-family: "Audiowide";*/
 	}
+	/*資料表圖片*/
 	span.fancytree-node.table_img > span.fancytree-icon {
 	  /*background-image: url("fancytree/demo/skin-custom/customDoc2.gif");*/
 	  background-image: url("img/acl_treeview/table_img.png");
+	  background-position: 0 0;
+	}
+	/*被選中的資料表圖片*/
+	span.fancytree-node.table_img_active > span.fancytree-icon {	  
+	  background-image: url("img/acl_treeview/table_img_active.png");
 	  background-position: 0 0;
 	}
 	span.fancytree-node.script_img > span.fancytree-icon {
@@ -674,18 +678,19 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 	  background-image: url("img/acl_treeview/script.png");
 	  background-position: 0 0;
 	}
-	span.fancytree-node.table_img_active > span.fancytree-icon {	  
-	  background-image: url("img/acl_treeview/table_img_active.png");
-	  background-position: 0 0;
-	}
+	
 	</style>
 	
 
+
+
 	<script type="text/javascript">
+	// 記錄動態的 table 節點ID
+	var dynamic_table_node_id;
+
 	$(document).ready(function() {
 
-		// 記錄動態的 table 節點ID
-		var dynamic_table_node_id;
+		
 		// 記錄動態的 script 節點 ID
 		var dynamic_script_node_id;
 
@@ -838,33 +843,7 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 
 				if (type==="table") {
 					// 開啟動態table
-			        $('#file_content', window.parent.document).get(0).contentWindow.set_dynamic_table(tablename , dbtable);	
-			        // 把現在的table icon 換成開啟
-					var $span = $(node.span);
-			        $span.find("> span.fancytree-icon").css({
-			            backgroundImage: "url(img/acl_treeview/table_img_active.png)",
-			            backgroundPosition: "0 0"
-			        });
-			        // dynamic table有被開啟了
-			        if (dynamic_table_node_id!==nodeid) {
-						// 先確認dynamic_table_node_id不是 undefined
-						if (dynamic_table_node_id !== undefined) {
-							// 取得dynamic_table_node_id 的 id
-							onblur_node = $("#tree").fancytree("getTree").getNodeByKey(dynamic_table_node_id);
-							onblur_node_type =onblur_node.data.type;
-							// alert(onblur_node.data.type);		
-							// 相同type
-							if (onblur_node_type===type) {
-								// 把之前的 dynamic  table 改為為開啟
-								var $span = $(onblur_node.span);
-						        $span.find("> span.fancytree-icon").css({
-						            backgroundImage: "url(img/acl_treeview/table_img.png)",
-						            backgroundPosition: "0 0"
-						        });
-							};
-						};
-						dynamic_table_node_id=nodeid;
-			        };
+					open_dynamic_table( nodeid , tablename , dbtable);
 				};
 
 				if (type==="script") {
@@ -901,6 +880,66 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 	  	});
 	  	
 	});
+	
+	// 新增table的節點
+	function add_table_node (nodeid , parent_node_id , table_name , table_db_name ) {
+		// 取得dynamic_table_node_id 的 id
+		parent_node_node = $("#tree").fancytree("getTree").getNodeByKey(parent_node_id);
+		// 替當下的節點下增加檔案
+		var childNode = parent_node_node.addChildren({
+        	title: table_name,
+        	type:"table",
+        	nodeid: nodeid,
+        	key: nodeid,
+        	extraClasses:'table_img',
+        	dbtable : table_db_name,
+        	tablename : table_name
+	    });
+	}
+
+	// 打開table節點 
+	function open_dynamic_table (node_id  , table_name , table_db_name) {
+		// 取得要開啟的節點
+		var open_node = $("#tree").fancytree("getTree").getNodeByKey(node_id);
+     	// $("#tree").fancytree("getTree").getNodeByKey(node_id).setActive();
+     	// 把節點設為 focus
+     	open_node.setActive();
+
+     	// 把圖片設為已開啟的table
+     	var $span = $(open_node.span);
+        $span.find("> span.fancytree-icon").css({
+            backgroundImage: "url(img/acl_treeview/table_img_active.png)",
+            backgroundPosition: "0 0"
+        });
+
+	     // dynamic table有被開啟了
+        if (dynamic_table_node_id!==node_id) {
+			// 若dynamic table 有被開啟了 需要把原先的table 圖片改為關閉
+			if (dynamic_table_node_id !== undefined) {
+				// 取得dynamic_table_node_id 的 id
+				onblur_node = $("#tree").fancytree("getTree").getNodeByKey(dynamic_table_node_id);
+				onblur_node_type =onblur_node.data.type;
+				// alert(onblur_node.data.type);		
+				// 相同type
+				if (onblur_node_type==="table") {
+					// 把之前的 dynamic  table 改為為關閉
+					var $span = $(onblur_node.span);
+			        $span.find("> span.fancytree-icon").css({
+			            backgroundImage: "url(img/acl_treeview/table_img.png)",
+			            backgroundPosition: "0 0"
+			        });
+				};
+			};
+			dynamic_table_node_id=node_id;
+        };
+        // 開啟動態table
+		$('#file_content', window.parent.document).get(0).contentWindow.set_dynamic_table(table_name , table_db_name);
+	}
+
+
+
+
+
 		
 	</script>
 	
@@ -921,18 +960,31 @@ td {font-size:12pt; font-family:Arial, Helvetica, sans-serif}
 		        				$folder_data="";
 		        				$sub_chk="";
 		        				if ($folder_chk>0) {
+		        					// 多useless 為了讓資料夾看起來可以展開
 		        					$folder_data='<ul><li id="useless_'.$d_id.'">useless</li></ul>';
 		        					$sub_chk="has_sub";
 		        				}
-		        				// 多useless 為了讓資料夾看起來可以展開
+		        				// 設定節點的兩種格式   放入data-type 或是  使用json格式放入data-json
 		        				// echo '<li class="folder" data-type="folder" data-openstatus="unopen" data-did="'.$d_id.'" data-subchk="'.$sub_chk.'" >'.$name.$folder_data.'</li>';
+		        				/*<li class="folder"  data-json='{"type": "folder" ,"openstatus": "unopen", "did":"<?echo $d_id;?>", "subchk": "<?echo $sub_chk;?>" }'  ><?echo $name.$folder_data;?></li>*/
+		        				// 放入設定
+		        				$folder_setting_json->type="folder";
+		        				$folder_setting_json->openstatus="unopen";
+		        				$folder_setting_json->did=$d_id;
+		        				$folder_setting_json->subchk="$sub_chk";
 		        				?>
-		        				<li class="folder"  data-json='{"type": "folder" ,"openstatus": "unopen", "did":"<?echo $d_id;?>", "subchk": "<?echo $sub_chk;?>" }'  ><?echo $name.$folder_data;?></li>
+		        				<li class="folder"  data-json='<?echo json_encode($folder_setting_json);?>' id="node_<?php echo $d_id;?>"  ><?echo $name.$folder_data;?></li>
 								<?
 
 		        			}elseif($directory_data["type"]=="table" ){
-								// echo '<li class="table_img '.$name.'" data-dbtable="'.$table_db_name.'"  data-tablename="'.$name.'" data-type="table"><span class="folder">'.$name.'</span></li>';
-								echo '<li class="table_img '.$name.'"  data-dbtable="'.$table_db_name.'"  data-tablename="'.$name.'" data-type="table" data-nodeid="node_'.$d_id.'"  id="node_'.$d_id.'" ><span class="folder" >'.$name.'</span></li>';
+								// echo '<li class="table_img '.$name.'"  data-dbtable="'.$table_db_name.'"  data-tablename="'.$name.'" data-type="table" data-nodeid="node_'.$d_id.'"  id="node_'.$d_id.'" ><span class="folder" >'.$name.'</span></li>';
+								$table_setting_json->dbtable="$table_db_name";
+								$table_setting_json->tablename="$name";
+								$table_setting_json->type="table";
+								$table_setting_json->nodeid="node_$d_id";
+								?>
+								<li class="table_img '.$name.'" data-json='<?echo json_encode($table_setting_json);?>'  id="node_<?php echo $d_id;?>" ><span class="folder" ><?echo $name;?></span></li>
+								<?
 		        			}
 						}
 		        	}

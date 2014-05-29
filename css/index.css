@@ -5,3 +5,20 @@
 .modal-dialog-center {
   padding-top: 15%;
 }
+
+#error_header{
+	margin-bottom: 50px;
+}
+#error_explain{
+	margin-bottom: 20px;
+}
+
+#error_detail{
+	width: 100%;
+	height: 100px;
+	background-color: gray;
+}
+.error_hightlight{
+	color: red;
+	text-decoration: underline;
+}

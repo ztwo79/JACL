@@ -1,3 +1,19 @@
+<?php
+session_start();
+
+$sUid=$_SESSION["sUid"];
+
+if (empty($sUid)) {
+    ?>
+        <script type="text/javascript">
+            window.location="member/login.php";
+        </script>
+    <?
+}
+
+
+
+?>
 <!DOCTYPE html>
 <html lang="zh_TW">
   <head>
@@ -14,7 +30,6 @@
     <!-- easyui -->
     <link rel="stylesheet" type="text/css" href="lib/jquery-easyui-1.3.6/themes/default/easyui.css">
     <link rel="stylesheet" type="text/css" href="lib/jquery-easyui-1.3.6/themes/icon.css">
-    <link rel="stylesheet" type="text/css" href="lib/jquery-easyui-1.3.6/demo.css">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -54,7 +69,6 @@
         </div>
       </div>
     </div>
-
     <!-- error Modal -->
     <div class="modal fade modal-dialog-center" id="errorModal"  tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-dialog">
@@ -64,11 +78,13 @@
             <h4 class="modal-title" id="myModalLabel">Error</h4>
           </div>
           <div class="modal-body">
-                <span>to: </span> <input id="extract_input" type="text" value="">
+                <div id="error_header">is nudefined</div>
+                <div id="error_explain">The location of the error is highlighted and underlined below</div>
+                <div id="error_detail">The location of the error is highlighted and underlined below</div>
           </div>
-          <div class="modal-footer">
-            <button id="extract_sumit_btn" type="button" class="btn btn-primary">確定</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+          <div class="modal-footer ">
+            <!-- <button id="extract_sumit_btn" type="button" class="btn btn-primary">確定</button> -->
+            <button type="button" class="btn btn-default center-block" data-dismiss="modal">ok</button>
           </div>
         </div>
       </div>
@@ -267,10 +283,12 @@
 
         <div class="row">
             <div class="easyui-layout" style="height:800px;">                
+                <!-- 左邊 瀏覽樹狀圖-->
                 <div data-options="region:'west',split:true" title="Project Navigator" style="width:325px;">
                     <div class="easyui-tabs" style="width:300px;height:760px;" data-options="tabPosition:'bottom',fit:true" >     
                         <div title="Overview" style="padding:10px;">     
-                            <iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe> 
+                            <!-- <iframe name="ifm-left" id="directory_iframe" src="directory.php" onload="tt();" width="100%" height="700" frameborder="0"></iframe>  -->
+                            <iframe name="ifm-left" id="directory_iframe" src="directory.php"  width="100%" height="700" frameborder="0"></iframe> 
                         </div>    
                         <div title="Log" style="padding:10px;">   
                             <iframe name="ifm-left-log" id="ifm_left_log" src="log_show.php" width="100%" height="680" frameborder="0"></iframe>   
@@ -280,10 +298,8 @@
                         </div>    
                     </div>    
                 </div>
-
-
-                <div data-options="region:'center',title:'Show_Table',iconCls:'icon-ok'"><iframe name="ifm-right" id="file_content"  src="tab.php" width="100%" height="700" frameborder="0"></iframe></div>
-                </div>
+                <!-- 右邊 顯示框 -->
+                <div data-options="region:'center',title:'',iconCls:'icon-ok'"><iframe name="ifm-right" id="file_content"  src="tab.php" width="100%" height="790" frameborder="0"></iframe></div>
             </div>      
             <!-- <div class="col-md-3 show_td" ><iframe name="ifm-left" src="directory.php" width="100%" height="700" frameborder="0"></iframe></div> -->
             <!-- <div class="col-md-9 show_td" ><iframe name="ifm-right" id="file_content"  src="jqgrid.php" width="100%" height="700" frameborder="0"></iframe></div>   -->

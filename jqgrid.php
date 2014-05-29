@@ -59,6 +59,7 @@ if ($_POST) {
 			var db_table_name = $("#db_table_name").val();
 
 			if (db_table_name.length>0) {
+				// 取得資料表的欄位與格式
 				$.ajax({ url: 'get_table_info_ajax.php' ,
 			        cache: false,
 			        dataType: 'html',// <== 設定傳送格式
@@ -98,6 +99,8 @@ if ($_POST) {
 						//    		// {name:'name',index:'name asc, invdate', width:100},
 						//    		// {name:'Bonus_2005',index:'Bonus_2005', width:80,align:"right" , sortable:false}
 						// ];
+
+						// 取得 table的資料
 						jQuery("#table_list").jqGrid({
 						   	url:'jq_server.php?db_table_name='+db_table_name,
 							// ajaxGridOptions: { contentType: 'application/json; charset=utf-8' },
@@ -106,7 +109,8 @@ if ($_POST) {
 						   	colModel: colModel_arr,
 						   	// default row
 						   	rowNum:30,
-						   	rowList:[30,50,100],
+						   	// 每頁筆數
+						   	rowList:[50, 80 ,100],
 						   	pager: '#pager',
 						    viewrecords: true,
 						    sortname: 'key_id',
@@ -121,7 +125,8 @@ if ($_POST) {
 						    sortable:true
 						    
 						});
-						jQuery("#table_list").jqGrid('navGrid','#pager',{edit:false,add:false,del:false});
+						$("#table_list").jqGrid('navGrid','#pager',{edit:false,add:false,del:false});
+
 
 						// cancel table_list_key_id sortable
 						$('tr.ui-jqgrid-labels').sortable({ cancel: 'th#table_list_key_id'});
@@ -136,15 +141,40 @@ if ($_POST) {
 			        }
 			    });
 			}
-		
 		});
+		// 開始搜尋
+		function col_filter	(searchField , searchOper , searchString ) {
+			// $("#table_list").jqGrid('setGridParam',{url:'get_table_info_ajax.php?searchString='+searchString});
+        	// 取得傳入 的data
+		 	var postData = $("#table_list").jqGrid("getGridParam", "postData");
+		 	// var colModel = $("#table_list").jqGrid("getGridParam", "colModel");
+		 	// 開啟搜尋
+		 	$("#table_list").jqGrid("setGridParam", { search: true });
+		 	// 搜尋的欄位
+		 	postData.searchField=searchField;
+		 	// 比對的條件
+		 	postData.searchOper=searchOper;
+		 	// 使用者輸入的資料
+		 	postData.searchString=searchString;
+		 	// 送出查詢
+		 	$("#table_list").jqGrid('setGridParam',{datatype:'json'}).trigger('reloadGrid');
+		 	// 放入資料
+			$("#search_chk").val("true");
+			$("#searchField").val(searchField);
+			$("#searchOper").val(searchOper);
+			$("#searchString").val(searchString);
+		}
 	
 	</script>
 </head>
 <body>
 	<input type="hidden" value="<?echo $table_name;?>" id="table_name">
-	<input type="hidde" value="<?echo $db_table_name;?>" id="db_table_name">
-	<input type="hidde" value="<?echo $col_list;?>" id="col_list">
+	<input type="hidden" value="<?echo $db_table_name;?>" id="db_table_name">
+	<input type="hidden" value="<?echo $col_list;?>" id="col_list">
+	<input type="hidden" value="" id="search_chk">
+	<input type="hidden" value="" id="searchField">
+	<input type="hidden" value="" id="searchOper">
+	<input type="hidden" value="" id="searchString">
 	<table id="table_list"></table>
 	<div id="pager"></div>
 </body>
