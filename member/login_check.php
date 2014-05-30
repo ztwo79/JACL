@@ -28,7 +28,7 @@ try {
 $row  = $stmt->fetch();
 if ($systemUser===$row["systemUser"] && $sPass === $row["sPass"]) {
 	// 1234 => 81dc9bdb52d04dc20036dbd8313ed055
-	$_SESSION["sUid"]=$row["sUid"];
+	$_SESSION["JACL_sUid"]=$row["sUid"];
 
 	// 登入成功
 	header("Location:../index.php");

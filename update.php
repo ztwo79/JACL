@@ -3,7 +3,7 @@
 
 include "include/config.php";
 $Update_SQL_arr = array(
-	array('check' => "SELECT * from directory_structure", 'update' => "CREATE TABLE IF NOT EXISTS `directory_structure` (
+	array('check' => "SELECT * from JTAL_directory_structure", 'update' => "CREATE TABLE IF NOT EXISTS `JTAL_directory_structure` (
 																				  d_id BIGINT NOT NULL auto_increment,																				  
 																				  sUid int(11)  NULL,
 																				  root_id BIGINT  NULL,
@@ -72,14 +72,43 @@ $Update_SQL_arr = array(
 																  PRIMARY KEY  (`log_table_index_id`)
 																) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;"),
 
-	array('check' => "SELECT * from member", 'update' => "CREATE TABLE `member` (
+	array('check' => "SELECT * from JACL_member", 'update' => "CREATE TABLE `JACL_member` (
 																  `sUid` bigint(11)  NULL auto_increment,
 																  `systemUser` varchar(50)  NULL,
 																  `sPass` varchar(50)  NULL,
 																  `sMail` varchar(100)  NULL,
 																  `sFullname` varchar(100)  NULL,
 																  UNIQUE(sUid)
-																)"),
+																)"),//使用者清單
+
+	array('check' => "SELECT * from JACL_PROJECT", 'update' => "CREATE TABLE `JACL_PROJECT` (
+																  `p_id` bigint(11)  NOT NULL auto_increment,
+																  `sUid` bigint(11)  NOT NULL ,
+																  `project_name` varchar(100)  NULL,
+																  `last_modified_date` DATETIME  NULL,
+																  UNIQUE(p_id)
+																)"),//ACL 專案檔
+
+	array('check' => "SELECT * from JACL_TABLE", 'update' => "CREATE TABLE `JACL_TABLE` (
+																  `t_id` bigint(11) NOT NULL auto_increment,
+																  `p_id` bigint(11) NOT NULL auto_increment,
+																  `table_name` varchar(100)  NULL,
+																  `content_table` varchar(100)  NULL,
+																  `ACL_file` varchar(100)  NULL,
+																  UNIQUE(t_id)
+																)"),//ACL 資料表檔
+
+
+	array('check' => "SELECT * from JACL_TLAYOUT", 'update' => "CREATE TABLE `JACL_TLAYOUT` (
+																  `l_id` bigint(11)  NOT NULL auto_increment,
+																  `p_id` bigint(11)  NOT NULL ,
+																  `col_name` varchar(100)  NULL,
+																  `data_type` varchar(100)  NULL,
+																  `project_name` varchar(100)  NULL,
+																  `last_modified_date` DATETIME  NULL,
+																  UNIQUE(l_id)
+																)"),//ACL 表格便於做資料字典
+
 
 );
 // array( 'check' => "SELECT `o_id` from `data_process`", 'update' => "ALTER TABLE  `data_process` ADD  `o_id` INT NOT NULL" ),
@@ -110,7 +139,7 @@ foreach ($Update_SQL_arr as $key => $Update_SQL_data) {
 }
 
 // 建立使用者
-$select_sql="SELECT * FROM member where systemUser = 'J0001' and sPass = '81dc9bdb52d04dc20036dbd8313ed055'";
+$select_sql="SELECT * FROM JACL_member where systemUser = 'J0001' and sPass = '81dc9bdb52d04dc20036dbd8313ed055'";
 $select_exe=mysql_query( $select_sql);
 $select_rs=mysql_fetch_array($select_exe);
 $sUid = $select_rs["sUid"];
@@ -121,7 +150,7 @@ if (empty($sUid)) {
 		"sMail"      => "@",				
 		"sFullname"      => "JACKSOFT",				
 	);			
-	$insert_sql  = "INSERT INTO member";
+	$insert_sql  = "INSERT INTO JACL_member";
 	$insert_sql .= " (".implode(",", array_keys($insert_arr)).")";
 	$insert_sql .= " VALUES ('".implode("', '", $insert_arr)."') ";
 	mysql_query($insert_sql);

@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$sUid=$_SESSION["sUid"];
+$sUid=$_SESSION["JACL_sUid"];
 
 if (empty($sUid)) {
     ?>

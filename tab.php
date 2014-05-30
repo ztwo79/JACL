@@ -78,15 +78,16 @@
                 command_line_arr = $.grep(command_line_arr, function(n, i){
                     return (n !== "" && n != null);
                 });
-                
-                // 取得指令
-                var command = command_line_arr[0].toLowerCase();
-                //要設定的欄位
-                var command_target = command_line_arr[1].toLowerCase();
-                
-                // 第三個參數
-                var command_third = command_line_arr[2].toLowerCase();
-                
+
+                if (command_line_arr.length>2) {
+                    // 取得指令
+                    var command = command_line_arr[0].toLowerCase();
+                    //要設定的欄位
+                    var command_target = command_line_arr[1].toLowerCase();
+                    // 第三個參數
+                    var command_third = command_line_arr[2].toLowerCase();
+
+                };
 
                  // 確認是否為有效的指令
                 var command_veify=false;
@@ -104,9 +105,11 @@
                     command_veify=true;                    
                     command_type="extract_record";
                 };
+
                 // 都不是可執行的命令
                 if (command_veify===false) {
                     alert(command_line_original_data+"is not a valid command"); 
+                    return false;
                 };
 
 
@@ -166,6 +169,7 @@
                                 // 顯示錯誤訊息
                                 parent.error_show( error_message , error_detail );
                                 cmmand_verify=false;
+                                return false;
                             }else{
                                 // 是有效的欄位 執行搜尋
                                 var searchField= command_line_arr[0];
