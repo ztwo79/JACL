@@ -2,19 +2,61 @@
 <?PHP
 
 include "include/config.php";
+
+// date_default_timezone_set('Asia/Taipei');
+// ini_set( 'memory_limit', '99999M' );
+// set_time_limit(0);
+// /*************************³sµ²¸ê®Æ®w**********************************/
+	
+// // 使用localhost 會導致連結Mysql過慢
+// // $HOST = "localhost";
+// $HOST = "127.0.0.1";
+// $DB_name="JACL";
+// $USER = "root";
+// $PASSWORD = "jacksoft";	 
+// $conn = mysql_connect($HOST,$USER,$PASSWORD) or die(mysql_error());
+// mysql_query("SET NAMES 'utf8'");
+// mysql_select_db($DB_name, $conn) or die(mysql_error());
+
+
+
 $Update_SQL_arr = array(
-	array('check' => "SELECT * from JTAL_directory_structure", 'update' => "CREATE TABLE IF NOT EXISTS `JTAL_directory_structure` (
+	// 舊的格式
+	// array('check' => "SELECT * from member", 'update' => "CREATE TABLE `member` (
+	// 															  `sUid` bigint(11)  NULL auto_increment,
+	// 															  `systemUser` varchar(50)  NULL,
+	// 															  `sPass` varchar(50)  NULL,
+	// 															  `sMail` varchar(100)  NULL,
+	// 															  `sFullname` varchar(100)  NULL,
+	// 															  UNIQUE(sUid)
+	// 															)"),//使用者清單
+	// array('check' => "SELECT * from directory_structure", 'update' => "CREATE TABLE IF NOT EXISTS `directory_structure` (
+	// 																	  d_id BIGINT NOT NULL auto_increment,																				  
+	// 																	  sUid int(11)  NULL,
+	// 																	  root_id BIGINT  NULL,
+	// 																	  parent_id BIGINT  NULL,
+	// 																	  name varchar(200)  NULL,																				  
+	// 																	  content_table varchar(200)  NULL,																				  
+	// 																	  ACL_file varchar(200)  NULL,																				  
+	// 																	  type varchar(20)  NULL,
+	// 																	  file_order BIGINT NULL,
+	// 																	  UNIQUE(d_id)
+	// 																	)"),
+
+
+	array('check' => "SELECT * from JACL_directory_structure", 'update' => "CREATE TABLE IF NOT EXISTS `JACL_directory_structure` (
 																				  d_id BIGINT NOT NULL auto_increment,																				  
-																				  sUid int(11)  NULL,
+																				  p_id BIGINT NOT NULL,
 																				  root_id BIGINT  NULL,
 																				  parent_id BIGINT  NULL,
-																				  name varchar(200)  NULL,																				  
-																				  content_table varchar(200)  NULL,																				  
-																				  ACL_file varchar(200)  NULL,																				  
+																				  name varchar(200)  NULL,
 																				  type varchar(20)  NULL,
+																				  content_id BIGINT NULL,
 																				  file_order BIGINT NULL,
 																				  UNIQUE(d_id)
-																				)"),
+																				)"),//資料夾格式
+
+	
 	array('check' => "SELECT * from log_file_log", 'update' => "CREATE TABLE `log_file_log` (
 																  `sUid` int(11) default NULL,
 																  `LOG_file_name` varchar(100) default NULL,
@@ -71,7 +113,7 @@ $Update_SQL_arr = array(
 																  `log_table_index_id` int(11) NOT NULL auto_increment,
 																  PRIMARY KEY  (`log_table_index_id`)
 																) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;"),
-
+	
 	array('check' => "SELECT * from JACL_member", 'update' => "CREATE TABLE `JACL_member` (
 																  `sUid` bigint(11)  NULL auto_increment,
 																  `systemUser` varchar(50)  NULL,
@@ -91,23 +133,35 @@ $Update_SQL_arr = array(
 
 	array('check' => "SELECT * from JACL_TABLE", 'update' => "CREATE TABLE `JACL_TABLE` (
 																  `t_id` bigint(11) NOT NULL auto_increment,
-																  `p_id` bigint(11) NOT NULL auto_increment,
+																  `p_id` bigint(11) NOT NULL ,
 																  `table_name` varchar(100)  NULL,
 																  `content_table` varchar(100)  NULL,
 																  `ACL_file` varchar(100)  NULL,
 																  UNIQUE(t_id)
 																)"),//ACL 資料表檔
 
-
 	array('check' => "SELECT * from JACL_TLAYOUT", 'update' => "CREATE TABLE `JACL_TLAYOUT` (
-																  `l_id` bigint(11)  NOT NULL auto_increment,
-																  `p_id` bigint(11)  NOT NULL ,
+																  `L_id` bigint(11)  NOT NULL auto_increment,
+																  `t_id` bigint(11)  NOT NULL ,
 																  `col_name` varchar(100)  NULL,
-																  `data_type` varchar(100)  NULL,
-																  `project_name` varchar(100)  NULL,
-																  `last_modified_date` DATETIME  NULL,
-																  UNIQUE(l_id)
+																  `acl_data_type` varchar(100)  NULL,
+																  `col_length` varchar(100)  NULL,
+																  `col_decimal_dot` varchar(100)  NULL,
+																  `db_data_type` varchar(100)  NULL,
+																  `col_order` int(11)  NULL,
+																  UNIQUE(L_id)
 																)"),//ACL 表格便於做資料字典
+
+	array('check' => "SELECT * from JACL_INDEX", 'update' => "CREATE TABLE `JACL_INDEX` (
+																  `i_id` bigint(11)  NOT NULL auto_increment,
+																  `p_id` bigint(11)  NOT NULL ,
+																  `t_id` bigint(11)  NOT NULL ,
+																  `table_name` varchar(100)  NULL,
+																  `index_file_name` varchar(100)  NULL,
+																  `index_key` varchar(100)  NULL,
+																  `create_date` DATETIME  NULL,
+																  UNIQUE(i_id)
+																)"),//ACL 引索表
 
 
 );

@@ -12,7 +12,7 @@ $sPass=md5($sPass);
 
 
 try {
-	$sql = "SELECT * from member where  systemUser='$systemUser' and sPass='$sPass'";
+	$sql = "SELECT * from JACL_member where  systemUser='$systemUser' and sPass='$sPass'";
 	$stmt = $db_conn->prepare($sql);
 	$exe = $stmt->execute();
 	if ($exe===false) {

@@ -7,7 +7,7 @@ set_time_limit(0);
 // 使用localhost 會導致連結Mysql過慢
 // $HOST = "localhost";
 $HOST = "127.0.0.1";
-$DB_name="acl_online";
+$DB_name="JACL";
 $USER = "root";
 $PASSWORD = "jacksoft";	 
 $conn = mysql_connect($HOST,$USER,$PASSWORD) or die(mysql_error());

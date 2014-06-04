@@ -32,7 +32,7 @@ function error_show (error_message , error_detail) {
 	$("#errorModal").modal();
 }
 
-$(document).ready(function(){ 
+$(document).ready(function(){
 	// 目錄檔load 之後 
 	$("#directory_iframe").on('load', function(event) {
 		// 點選iframe 的內容 取消上面有被點開的tab
